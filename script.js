@@ -1,6 +1,10 @@
 // Slideshow configuration
 const SLIDE_DURATION = 20000; // 20 seconds
+const NEWS_ROTATION_DURATION = 20000; // 20 seconds per news item
 let currentSlide = 0;
+let currentNewsIndex = 0;
+let newsItems = [];
+let newsRotationInterval = null;
 const slides = document.querySelectorAll('.slide');
 const indicators = document.querySelectorAll('.indicator');
 
@@ -52,6 +56,13 @@ function showSlide(index) {
             indicator.classList.remove('active');
         }
     });
+    
+    // Start news rotation when on news slide
+    if (index === 2 && newsItems.length > 0) {
+        startNewsRotation();
+    } else {
+        stopNewsRotation();
+    }
 }
 
 // Move to next slide
@@ -174,48 +185,55 @@ function getMockNewsData() {
             title: 'Uspešna zaključna prireditev dijakov',
             link: 'https://sckr.si',
             description: 'Dijaki zaključnih letnikov so se poslovili z izjemno uspešno prireditvijo. Program je bil bogat z glasbenimi in plesnimi točkami.',
-            pubDate: new Date().toISOString()
+            pubDate: new Date().toISOString(),
+            image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=400&fit=crop'
         },
         {
             title: 'Dnevi odprtih vrat - povabilo',
             link: 'https://sckr.si',
             description: 'Vabimo vas na dneve odprtih vrat našega šolskega centra. Predstavili bomo vse programe in dejavnosti.',
-            pubDate: new Date(Date.now() - 86400000).toISOString()
+            pubDate: new Date(Date.now() - 86400000).toISOString(),
+            image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=400&fit=crop'
         },
         {
             title: 'Rezultati športnih tekmovanj',
             link: 'https://sckr.si',
             description: 'Naši dijaki so dosegli odlične rezultate na regijskem tekmovanju v atletiki. Čestitamo vsem udeležencem!',
-            pubDate: new Date(Date.now() - 172800000).toISOString()
+            pubDate: new Date(Date.now() - 172800000).toISOString(),
+            image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=400&fit=crop'
         },
         {
             title: 'Nova računalniška oprema',
             link: 'https://sckr.si',
             description: 'Šolski center je pridobil novo računalniško opremo za IT učilnice. Dijaki bodo imeli dostop do najnovejše tehnologije.',
-            pubDate: new Date(Date.now() - 259200000).toISOString()
+            pubDate: new Date(Date.now() - 259200000).toISOString(),
+            image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=400&fit=crop'
         },
         {
             title: 'Ekskurzija v Ljubljano',
             link: 'https://sckr.si',
             description: 'Dijaki so se udeležili ekskurzije v našo prestolnico, kjer so si ogledali parlament in različne kulturne ustanove.',
-            pubDate: new Date(Date.now() - 345600000).toISOString()
+            pubDate: new Date(Date.now() - 345600000).toISOString(),
+            image: 'https://images.unsplash.com/photo-1555894350-6b7f8815a8e3?w=800&h=400&fit=crop'
         },
         {
             title: 'Predavanje o zdravi prehrani',
             link: 'https://sckr.si',
             description: 'Nutricionistka je predstavila pomembnost zdrave in uravnotežene prehrane za mladostnike.',
-            pubDate: new Date(Date.now() - 432000000).toISOString()
+            pubDate: new Date(Date.now() - 432000000).toISOString(),
+            image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&h=400&fit=crop'
         }
     ];
     
-    // Create mock RSS XML
-    let xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel>';
+    // Create mock RSS XML with images
+    let xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel>';
     mockNews.forEach(news => {
         xml += `<item>
             <title>${news.title}</title>
             <link>${news.link}</link>
             <description>${news.description}</description>
             <pubDate>${new Date(news.pubDate).toUTCString()}</pubDate>
+            ${news.image ? `<enclosure url="${news.image}" type="image/jpeg" />` : ''}
         </item>`;
     });
     xml += '</channel></rss>';
@@ -250,22 +268,41 @@ function parseRSSFeed(xmlText) {
     const xml = parser.parseFromString(xmlText, 'text/xml');
     
     const items = xml.querySelectorAll('item');
-    const newsContainer = document.getElementById('news-container');
-    newsContainer.innerHTML = '';
+    newsItems = []; // Reset news items array
     
     if (items.length === 0) {
+        const newsContainer = document.getElementById('news-container');
         newsContainer.innerHTML = '<div class="loading">Trenutno ni razpoložljivih novic</div>';
         return;
     }
     
     items.forEach((item, index) => {
-        // Limit to first 9 news items for better display
-        if (index >= 9) return;
+        // Limit to first 20 news items
+        if (index >= 20) return;
         
         const title = item.querySelector('title')?.textContent || 'Brez naslova';
         const link = item.querySelector('link')?.textContent || '#';
         const description = item.querySelector('description')?.textContent || '';
         const pubDate = item.querySelector('pubDate')?.textContent || '';
+        
+        // Try to extract image from various RSS fields
+        let imageUrl = '';
+        const enclosure = item.querySelector('enclosure[type^="image"]');
+        if (enclosure) {
+            imageUrl = enclosure.getAttribute('url');
+        } else {
+            // Try to find image in media:content or media:thumbnail
+            const mediaContent = item.querySelector('content[url], thumbnail[url]');
+            if (mediaContent) {
+                imageUrl = mediaContent.getAttribute('url');
+            } else {
+                // Try to extract image from description HTML
+                const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                }
+            }
+        }
         
         // Format date
         let formattedDate = '';
@@ -278,17 +315,61 @@ function parseRSSFeed(xmlText) {
             }
         }
         
-        const newsItem = document.createElement('div');
-        newsItem.className = 'news-item';
-        newsItem.innerHTML = `
-            <div class="news-title">${title}</div>
-            ${formattedDate ? `<div class="news-date">📅 ${formattedDate}</div>` : ''}
-            ${description ? `<div class="news-description">${stripHTML(description)}</div>` : ''}
-            <a href="${link}" class="news-link" target="_blank">Preberi več →</a>
-        `;
-        
-        newsContainer.appendChild(newsItem);
+        newsItems.push({
+            title,
+            link,
+            description: stripHTML(description),
+            date: formattedDate,
+            image: imageUrl
+        });
     });
+    
+    // Display first news item
+    currentNewsIndex = 0;
+    displayCurrentNews();
+    
+    // Start rotation if on news slide
+    if (currentSlide === 2) {
+        startNewsRotation();
+    }
+}
+
+// Display current news item
+function displayCurrentNews() {
+    if (newsItems.length === 0) return;
+    
+    const newsContainer = document.getElementById('news-container');
+    const news = newsItems[currentNewsIndex];
+    
+    newsContainer.innerHTML = `
+        <div class="news-item">
+            ${news.image ? `<img src="${news.image}" alt="${news.title}" class="news-image" onerror="this.style.display='none'">` : ''}
+            <div class="news-title">${news.title}</div>
+            ${news.date ? `<div class="news-date">📅 ${news.date}</div>` : ''}
+            ${news.description ? `<div class="news-description">${news.description}</div>` : ''}
+            <a href="${news.link}" class="news-link" target="_blank">Preberi več →</a>
+        </div>
+    `;
+}
+
+// Start news rotation
+function startNewsRotation() {
+    stopNewsRotation(); // Clear any existing interval
+    
+    if (newsItems.length <= 1) return; // No need to rotate if only one item
+    
+    newsRotationInterval = setInterval(() => {
+        currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+        displayCurrentNews();
+    }, NEWS_ROTATION_DURATION);
+}
+
+// Stop news rotation
+function stopNewsRotation() {
+    if (newsRotationInterval) {
+        clearInterval(newsRotationInterval);
+        newsRotationInterval = null;
+    }
 }
 
 // Strip HTML tags from text
