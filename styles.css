@@ -6,8 +6,8 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #c9ddcf 0%, #e1ebe0 100%);
     min-height: 100vh;
     overflow: hidden;
     position: relative;
@@ -80,8 +80,9 @@ body::before {
 }
 
 .main-title {
-    font-size: 120px;
+    font-size: 150px;
     font-weight: 800;
+    font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
     color: #ffffff;
     text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     margin-bottom: 30px;
@@ -95,10 +96,11 @@ body::before {
 }
 
 .subtitle {
-    font-size: 40px;
+    font-size: 52px;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 300;
     letter-spacing: 4px;
+    font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
     animation: fadeIn 2s ease-in;
 }
 
@@ -110,14 +112,15 @@ body::before {
 /* Weather Slide */
 .weather-content {
     width: 100%;
-    max-width: 1600px;
+    max-width: 1800px;
 }
 
 .section-title {
-    font-size: 60px;
+    font-size: 72px;
     color: #ffffff;
     text-align: center;
     margin-bottom: 50px;
+    font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
     text-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     animation: slideInLeft 1s ease-out;
 }
@@ -186,14 +189,15 @@ body::before {
 }
 
 .day-name {
-    font-size: 28px;
+    font-size: 34px;
     font-weight: 700;
     color: #667eea;
     margin-bottom: 15px;
+    font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
 }
 
 .weather-icon {
-    font-size: 80px;
+    font-size: 96px;
     margin: 20px 0;
     animation: gentleFloat 4s ease-in-out infinite;
 }
@@ -204,21 +208,21 @@ body::before {
 }
 
 .weather-temp {
-    font-size: 36px;
+    font-size: 42px;
     font-weight: 700;
     color: #333;
     margin: 15px 0;
 }
 
 .weather-description {
-    font-size: 20px;
+    font-size: 24px;
     color: #666;
     text-transform: capitalize;
     margin-bottom: 10px;
 }
 
 .weather-details {
-    font-size: 16px;
+    font-size: 20px;
     color: #888;
     margin-top: 10px;
 }
@@ -226,15 +230,17 @@ body::before {
 /* News Slide */
 .news-content {
     width: 100%;
-    max-width: 1400px;
+    max-width: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 100%;
 }
 
 .news-container {
     width: 100%;
     animation: slideInRight 1s ease-out;
+    height: 100%;
 }
 
 @keyframes slideInRight {
@@ -255,9 +261,21 @@ body::before {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     border-left: 5px solid #667eea;
     animation: fadeInScale 0.8s ease-out;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 40px;
+    align-items: stretch;
+    height: 100%;
+}
+
+.news-item.no-image {
+    grid-template-columns: 1fr;
+}
+
+.news-text {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 24px;
 }
 
 @keyframes fadeInScale {
@@ -273,27 +291,29 @@ body::before {
 
 .news-image {
     width: 100%;
-    max-height: 400px;
+    height: 100%;
+    max-height: none;
     object-fit: cover;
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .news-title {
-    font-size: 48px;
+    font-size: clamp(32px, 3vw, 54px);
     font-weight: 700;
     color: #333;
     line-height: 1.3;
+    font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
 }
 
 .news-date {
-    font-size: 24px;
+    font-size: clamp(20px, 1.8vw, 28px);
     color: #667eea;
     font-weight: 600;
 }
 
 .news-description {
-    font-size: 28px;
+    font-size: clamp(22px, 2.2vw, 32px);
     color: #555;
     line-height: 1.6;
 }
@@ -302,7 +322,7 @@ body::before {
     display: inline-block;
     color: #667eea;
     text-decoration: none;
-    font-size: 24px;
+    font-size: clamp(18px, 1.6vw, 26px);
     font-weight: 600;
     padding: 15px 30px;
     border: 2px solid #667eea;
@@ -365,15 +385,23 @@ body::before {
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-    .main-title { font-size: 80px; }
-    .subtitle { font-size: 32px; }
-    .section-title { font-size: 48px; }
+    .main-title { font-size: 100px; }
+    .subtitle { font-size: 40px; }
+    .section-title { font-size: 56px; }
     .weather-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 }
 
 @media (max-width: 768px) {
-    .main-title { font-size: 60px; }
-    .subtitle { font-size: 24px; }
-    .section-title { font-size: 36px; }
+    .main-title { font-size: 70px; }
+    .subtitle { font-size: 28px; }
+    .section-title { font-size: 42px; }
     .slide { padding: 30px; }
+    .news-item {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    .news-image {
+        height: auto;
+        max-height: 400px;
+    }
 }
