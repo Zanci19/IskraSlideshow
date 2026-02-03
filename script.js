@@ -119,7 +119,7 @@ function getWeatherInfo(code) {
         2: { desc: 'Delno oblačno', icon: '⛅' },
         3: { desc: 'Oblačno', icon: '☁️' },
         45: { desc: 'Megla', icon: '🌫️' },
-        48: { desc: 'Megla z ivje', icon: '🌫️' },
+        48: { desc: 'Megla z ivjem', icon: '🌫️' },
         51: { desc: 'Rahlo rosenje', icon: '🌦️' },
         53: { desc: 'Rosenje', icon: '🌦️' },
         55: { desc: 'Močno rosenje', icon: '🌧️' },

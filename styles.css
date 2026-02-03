@@ -369,7 +369,6 @@ body::before {
     .subtitle { font-size: 32px; }
     .section-title { font-size: 48px; }
     .weather-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-    .news-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
