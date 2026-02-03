@@ -359,14 +359,17 @@ function displayCurrentNews() {
     
     const newsContainer = document.getElementById('news-container');
     const news = newsItems[currentNewsIndex];
+    const hasImage = Boolean(news.image);
     
     newsContainer.innerHTML = `
-        <div class="news-item">
-            ${news.image ? `<img src="${news.image}" alt="${news.title}" class="news-image" onerror="this.style.display='none'">` : ''}
-            <div class="news-title">${news.title}</div>
-            ${news.date ? `<div class="news-date">📅 ${news.date}</div>` : ''}
-            ${news.description ? `<div class="news-description">${news.description}</div>` : ''}
-            <a href="${news.link}" class="news-link" target="_blank">Preberi več →</a>
+        <div class="news-item${hasImage ? '' : ' no-image'}">
+            <div class="news-text">
+                <div class="news-title">${news.title}</div>
+                ${news.date ? `<div class="news-date">📅 ${news.date}</div>` : ''}
+                ${news.description ? `<div class="news-description">${news.description}</div>` : ''}
+                <a href="${news.link}" class="news-link" target="_blank">Preberi več →</a>
+            </div>
+            ${hasImage ? `<img src="${news.image}" alt="${news.title}" class="news-image" onerror="this.closest('.news-item').classList.add('no-image'); this.remove();">` : ''}
         </div>
     `;
 }
