@@ -5,6 +5,7 @@ let currentSlide = 0;
 let currentNewsIndex = 0;
 let newsItems = [];
 let newsRotationInterval = null;
+let slideInterval = null; // Store the slide interval so we can reset it
 const slides = document.querySelectorAll('.slide');
 const indicators = document.querySelectorAll('.indicator');
 
@@ -28,15 +29,29 @@ const slovenianDays = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'P
 // Initialize slideshow
 function initSlideshow() {
     showSlide(currentSlide);
-    setInterval(nextSlide, SLIDE_DURATION);
+    startSlideInterval();
     
     // Add click handlers to indicators
     indicators.forEach((indicator, index) => {
         indicator.addEventListener('click', () => {
             currentSlide = index;
             showSlide(currentSlide);
+            resetSlideTimer(); // Reset the timer when manually navigating
         });
     });
+}
+
+// Start the slide interval
+function startSlideInterval() {
+    slideInterval = setInterval(nextSlide, SLIDE_DURATION);
+}
+
+// Reset the slide timer
+function resetSlideTimer() {
+    if (slideInterval) {
+        clearInterval(slideInterval);
+    }
+    startSlideInterval();
 }
 
 // Show specific slide
@@ -186,54 +201,56 @@ function getMockNewsData() {
             link: 'https://sckr.si',
             description: 'Dijaki zaključnih letnikov so se poslovili z izjemno uspešno prireditvijo. Program je bil bogat z glasbenimi in plesnimi točkami.',
             pubDate: new Date().toISOString(),
-            image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=400&fit=crop'
+            image: 'https://picsum.photos/800/400?random=1'
         },
         {
             title: 'Dnevi odprtih vrat - povabilo',
             link: 'https://sckr.si',
             description: 'Vabimo vas na dneve odprtih vrat našega šolskega centra. Predstavili bomo vse programe in dejavnosti.',
             pubDate: new Date(Date.now() - 86400000).toISOString(),
-            image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=400&fit=crop'
+            image: 'https://picsum.photos/800/400?random=2'
         },
         {
             title: 'Rezultati športnih tekmovanj',
             link: 'https://sckr.si',
             description: 'Naši dijaki so dosegli odlične rezultate na regijskem tekmovanju v atletiki. Čestitamo vsem udeležencem!',
             pubDate: new Date(Date.now() - 172800000).toISOString(),
-            image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=400&fit=crop'
+            image: 'https://picsum.photos/800/400?random=3'
         },
         {
             title: 'Nova računalniška oprema',
             link: 'https://sckr.si',
             description: 'Šolski center je pridobil novo računalniško opremo za IT učilnice. Dijaki bodo imeli dostop do najnovejše tehnologije.',
             pubDate: new Date(Date.now() - 259200000).toISOString(),
-            image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=400&fit=crop'
+            image: 'https://picsum.photos/800/400?random=4'
         },
         {
             title: 'Ekskurzija v Ljubljano',
             link: 'https://sckr.si',
             description: 'Dijaki so se udeležili ekskurzije v našo prestolnico, kjer so si ogledali parlament in različne kulturne ustanove.',
             pubDate: new Date(Date.now() - 345600000).toISOString(),
-            image: 'https://images.unsplash.com/photo-1555894350-6b7f8815a8e3?w=800&h=400&fit=crop'
+            image: 'https://picsum.photos/800/400?random=5'
         },
         {
             title: 'Predavanje o zdravi prehrani',
             link: 'https://sckr.si',
             description: 'Nutricionistka je predstavila pomembnost zdrave in uravnotežene prehrane za mladostnike.',
             pubDate: new Date(Date.now() - 432000000).toISOString(),
-            image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&h=400&fit=crop'
+            image: 'https://picsum.photos/800/400?random=6'
         }
     ];
     
-    // Create mock RSS XML with images
+    // Create mock RSS XML with images - properly escape special characters
     let xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel>';
     mockNews.forEach(news => {
+        // Escape XML special characters in URLs
+        const escapedImageUrl = news.image ? news.image.replace(/&/g, '&amp;') : '';
         xml += `<item>
-            <title>${news.title}</title>
+            <title><![CDATA[${news.title}]]></title>
             <link>${news.link}</link>
-            <description>${news.description}</description>
+            <description><![CDATA[${news.description}]]></description>
             <pubDate>${new Date(news.pubDate).toUTCString()}</pubDate>
-            ${news.image ? `<enclosure url="${news.image}" type="image/jpeg" />` : ''}
+            ${escapedImageUrl ? `<enclosure url="${escapedImageUrl}" type="image/jpeg" />` : ''}
         </item>`;
     });
     xml += '</channel></rss>';
@@ -277,8 +294,7 @@ function parseRSSFeed(xmlText) {
     }
     
     items.forEach((item, index) => {
-        // Limit to first 20 news items
-        if (index >= 20) return;
+        // Remove limit - fetch ALL news items
         
         const title = item.querySelector('title')?.textContent || 'Brez naslova';
         const link = item.querySelector('link')?.textContent || '#';
@@ -323,6 +339,9 @@ function parseRSSFeed(xmlText) {
             image: imageUrl
         });
     });
+    
+    // RSS feeds typically return newest items first, which is what we want
+    // If the feed returns oldest first, we would need to reverse: newsItems.reverse();
     
     // Display first news item
     currentNewsIndex = 0;
