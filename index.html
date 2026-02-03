@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Šolski center Kranj - Digitalni zaslon</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="slideshow-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active" id="slide-title">
+            <div class="title-content">
+                <h1 class="main-title">Šolski center Kranj</h1>
+                <p class="subtitle">Digitalni informacijski zaslon</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Weather -->
+        <div class="slide" id="slide-weather">
+            <div class="weather-content">
+                <h2 class="section-title">Vremenska napoved - Kranj</h2>
+                <div id="weather-container" class="weather-grid">
+                    <div class="loading">Nalaganje vremenske napovedi...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: News -->
+        <div class="slide" id="slide-news">
+            <div class="news-content">
+                <h2 class="section-title">Novice</h2>
+                <div id="news-container" class="news-grid">
+                    <div class="loading">Nalaganje novic...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide indicators -->
+    <div class="slide-indicators">
+        <span class="indicator active" data-slide="0"></span>
+        <span class="indicator" data-slide="1"></span>
+        <span class="indicator" data-slide="2"></span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
