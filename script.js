@@ -19,7 +19,7 @@ const weatherIcons = {
 };
 
 // Slovenian day names
-const slovakDays = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
+const slovenianDays = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
 
 // Initialize slideshow
 function initSlideshow() {
@@ -108,7 +108,7 @@ function getWeatherInfo(code) {
         2: { desc: 'Delno oblačno', icon: '⛅' },
         3: { desc: 'Oblačno', icon: '☁️' },
         45: { desc: 'Megla', icon: '🌫️' },
-        48: { desc: 'Megla z ivjem', icon: '🌫️' },
+        48: { desc: 'Megla z ivje', icon: '🌫️' },
         51: { desc: 'Rahlo rosenje', icon: '🌦️' },
         53: { desc: 'Rosenje', icon: '🌦️' },
         55: { desc: 'Močno rosenje', icon: '🌧️' },
@@ -141,7 +141,7 @@ function displayWeather(data) {
     
     for (let i = 0; i < 7; i++) {
         const date = new Date(daily.time[i]);
-        const dayName = slovakDays[date.getDay()];
+        const dayName = slovenianDays[date.getDay()];
         const tempMax = Math.round(daily.temperature_2m_max[i]);
         const tempMin = Math.round(daily.temperature_2m_min[i]);
         const weatherCode = daily.weathercode[i];
@@ -272,7 +272,7 @@ function parseRSSFeed(xmlText) {
         if (pubDate) {
             try {
                 const date = new Date(pubDate);
-                formattedDate = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                formattedDate = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
             } catch (e) {
                 formattedDate = pubDate;
             }
