@@ -34,14 +34,14 @@ function initSlideshow() {
     showSlide(currentSlide);
     startSlideInterval();
     
-    // Add click handlers to indicators
-    indicators.forEach((indicator, index) => {
-        indicator.addEventListener('click', () => {
-            currentSlide = index;
-            showSlide(currentSlide);
-            resetSlideTimer(); // Reset the timer when manually navigating
-        });
-    });
+    // Click navigation disabled - keyboard only
+    // indicators.forEach((indicator, index) => {
+    //     indicator.addEventListener('click', () => {
+    //         currentSlide = index;
+    //         showSlide(currentSlide);
+    //         resetSlideTimer(); // Reset the timer when manually navigating
+    //     });
+    // });
 }
 
 // Start the slide interval
@@ -198,6 +198,39 @@ function displayWeather(data) {
         
         weatherContainer.appendChild(dayElement);
     }
+    
+    // Display mini weather widgets for today (first day)
+    displayMiniWeather(data);
+}
+
+// Display mini weather widgets for today
+function displayMiniWeather(data) {
+    const miniWeatherTitle = document.getElementById('mini-weather-title');
+    const miniWeatherNews = document.getElementById('mini-weather-news');
+    
+    if (!data || !data.daily || data.daily.time.length === 0) {
+        return;
+    }
+    
+    const daily = data.daily;
+    const today = new Date(daily.time[0]);
+    const dayName = slovenianDays[today.getDay()];
+    const tempMax = Math.round(daily.temperature_2m_max[0]);
+    const tempMin = Math.round(daily.temperature_2m_min[0]);
+    const weatherCode = daily.weathercode[0];
+    const weatherInfo = getWeatherInfo(weatherCode);
+    
+    const miniWidgetHTML = `
+        <div class="mini-weather-icon">${weatherInfo.icon}</div>
+        <div class="mini-weather-info">
+            <div class="mini-weather-location">Kranj - ${dayName}</div>
+            <div class="mini-weather-temp">${tempMax}° / ${tempMin}°</div>
+            <div class="mini-weather-desc">${weatherInfo.desc}</div>
+        </div>
+    `;
+    
+    miniWeatherTitle.innerHTML = miniWidgetHTML;
+    miniWeatherNews.innerHTML = miniWidgetHTML;
 }
 
 // Display weather error
