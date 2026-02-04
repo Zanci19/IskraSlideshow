@@ -3,8 +3,9 @@ const SLIDE_DURATION = 20000; // 20 seconds
 const NEWS_ROTATION_DURATION = 20000; // 20 seconds per news item
 const MAX_NEWS_TO_SHOW = 3; // Show only 3 news items before returning to first slide
 let currentSlide = 0;
-let currentNewsIndex = 0;
-let newsShownCount = 0; // Track how many news items have been shown
+let globalNewsStartIndex = 0; // Global position tracking - persists across slide transitions
+let currentNewsIndex = 0; // Current index within the 3-news batch
+let newsShownCount = 0; // Track how many news items have been shown in current batch
 let newsItems = [];
 let newsRotationInterval = null;
 let slideInterval = null; // Store the slide interval so we can reset it
@@ -76,8 +77,9 @@ function showSlide(index) {
     
     // Start news rotation when on news slide
     if (index === 2 && newsItems.length > 0) {
-        newsShownCount = 1; // First news item counts as shown
-        currentNewsIndex = 0; // Start from first news
+        // Calculate current batch starting position
+        currentNewsIndex = globalNewsStartIndex;
+        newsShownCount = 1; // First news item in this batch counts as shown
         displayCurrentNews();
         startNewsRotation();
     } else {
@@ -266,13 +268,10 @@ function getMockNewsData() {
 // Fetch news from RSS feed
 async function fetchNews() {
     try {
+        // Use the RSS URL directly without CORS proxy
         const RSS_URL = 'https://sckr.si/?show=1000&format=feed&type=rss';
         
-        // Use a CORS proxy for development
-        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-        const url = CORS_PROXY + encodeURIComponent(RSS_URL);
-        
-        const response = await fetch(url);
+        const response = await fetch(RSS_URL);
         if (!response.ok) throw new Error('RSS fetch error');
         
         const text = await response.text();
@@ -349,6 +348,7 @@ function parseRSSFeed(xmlText) {
     // If the feed returns oldest first, we would need to reverse: newsItems.reverse();
     
     // Display first news item
+    globalNewsStartIndex = 0; // Reset global position when fresh news is loaded
     currentNewsIndex = 0;
     displayCurrentNews();
     
@@ -389,6 +389,15 @@ function startNewsRotation() {
         // Check if we've shown enough news items before rotating
         if (newsShownCount >= MAX_NEWS_TO_SHOW) {
             stopNewsRotation();
+            
+            // Update global position for next visit to news slide
+            globalNewsStartIndex = globalNewsStartIndex + MAX_NEWS_TO_SHOW;
+            
+            // Wrap around to beginning if we've shown all news
+            if (globalNewsStartIndex >= newsItems.length) {
+                globalNewsStartIndex = 0;
+            }
+            
             currentSlide = 0; // Go back to first slide
             showSlide(currentSlide);
             resetSlideTimer(); // Reset the main slide timer
