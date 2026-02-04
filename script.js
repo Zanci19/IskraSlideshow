@@ -102,28 +102,6 @@ function nextSlide() {
     showSlide(currentSlide);
 }
 
-// Mock weather data for fallback
-function getMockWeatherData() {
-    const today = new Date();
-    const mockData = {
-        daily: {
-            time: [],
-            temperature_2m_max: [18, 20, 19, 17, 21, 22, 20],
-            temperature_2m_min: [8, 10, 9, 7, 11, 12, 10],
-            weathercode: [1, 2, 61, 3, 0, 1, 2]
-        }
-    };
-    
-    // Generate dates for next 7 days
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        mockData.daily.time.push(date.toISOString().split('T')[0]);
-    }
-    
-    return mockData;
-}
-
 // Fetch weather data for Kranj
 async function fetchWeather() {
     try {
@@ -137,8 +115,7 @@ async function fetchWeather() {
         displayWeather(data);
     } catch (error) {
         console.error('Error fetching weather:', error);
-        // Use mock data as fallback
-        displayWeather(getMockWeatherData());
+        displayWeatherError();
     }
 }
 
@@ -250,71 +227,6 @@ function displayWeatherError() {
     if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
-// Mock news data for fallback
-function getMockNewsData() {
-    const mockNews = [
-        {
-            title: 'Uspešna zaključna prireditev dijakov',
-            link: 'https://sckr.si',
-            description: 'Dijaki zaključnih letnikov so se poslovili z izjemno uspešno prireditvijo. Program je bil bogat z glasbenimi in plesnimi točkami.',
-            pubDate: new Date().toISOString(),
-            image: 'https://picsum.photos/800/400?random=1'
-        },
-        {
-            title: 'Dnevi odprtih vrat - povabilo',
-            link: 'https://sckr.si',
-            description: 'Vabimo vas na dneve odprtih vrat našega šolskega centra. Predstavili bomo vse programe in dejavnosti.',
-            pubDate: new Date(Date.now() - 86400000).toISOString(),
-            image: 'https://picsum.photos/800/400?random=2'
-        },
-        {
-            title: 'Rezultati športnih tekmovanj',
-            link: 'https://sckr.si',
-            description: 'Naši dijaki so dosegli odlične rezultate na regijskem tekmovanju v atletiki. Čestitamo vsem udeležencem!',
-            pubDate: new Date(Date.now() - 172800000).toISOString(),
-            image: 'https://picsum.photos/800/400?random=3'
-        },
-        {
-            title: 'Nova računalniška oprema',
-            link: 'https://sckr.si',
-            description: 'Šolski center je pridobil novo računalniško opremo za IT učilnice. Dijaki bodo imeli dostop do najnovejše tehnologije.',
-            pubDate: new Date(Date.now() - 259200000).toISOString(),
-            image: 'https://picsum.photos/800/400?random=4'
-        },
-        {
-            title: 'Ekskurzija v Ljubljano',
-            link: 'https://sckr.si',
-            description: 'Dijaki so se udeležili ekskurzije v našo prestolnico, kjer so si ogledali parlament in različne kulturne ustanove.',
-            pubDate: new Date(Date.now() - 345600000).toISOString(),
-            image: 'https://picsum.photos/800/400?random=5'
-        },
-        {
-            title: 'Predavanje o zdravi prehrani',
-            link: 'https://sckr.si',
-            description: 'Nutricionistka je predstavila pomembnost zdrave in uravnotežene prehrane za mladostnike.',
-            pubDate: new Date(Date.now() - 432000000).toISOString(),
-            image: 'https://picsum.photos/800/400?random=6'
-        }
-    ];
-    
-    // Create mock RSS XML with images - properly escape special characters
-    let xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel>';
-    mockNews.forEach(news => {
-        // Escape XML special characters in URLs
-        const escapedImageUrl = news.image ? news.image.replace(/&/g, '&amp;') : '';
-        xml += `<item>
-            <title><![CDATA[${news.title}]]></title>
-            <link>${news.link}</link>
-            <description><![CDATA[${news.description}]]></description>
-            <pubDate>${new Date(news.pubDate).toUTCString()}</pubDate>
-            ${escapedImageUrl ? `<enclosure url="${escapedImageUrl}" type="image/jpeg" />` : ''}
-        </item>`;
-    });
-    xml += '</channel></rss>';
-    
-    return xml;
-}
-
 // Fetch news from RSS feed
 async function fetchNews() {
     try {
@@ -328,8 +240,7 @@ async function fetchNews() {
         parseRSSFeed(text);
     } catch (error) {
         console.error('Error fetching news:', error);
-        // Use mock data as fallback
-        parseRSSFeed(getMockNewsData());
+        displayNewsError();
     }
 }
 
@@ -433,7 +344,14 @@ function displayCurrentNews() {
 function startNewsRotation() {
     stopNewsRotation(); // Clear any existing interval
     
-    if (newsItems.length <= 1) return; // No need to rotate if only one item
+    if (newsItems.length <= 1) {
+        setTimeout(() => {
+            currentSlide = 0;
+            showSlide(currentSlide);
+            startSlideInterval();
+        }, NEWS_ROTATION_DURATION);
+        return;
+    }
     
     newsRotationInterval = setInterval(() => {
         // Check if we've shown enough news items before rotating
@@ -492,7 +410,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh weather and news every 10 minutes
     setInterval(() => {
         fetchWeather();
-        fetchNews();
     }, 600000);
     
     // Update clock every second
