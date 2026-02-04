@@ -71,6 +71,9 @@ body::before {
 .title-content {
     text-align: center;
     animation: slideInDown 1.5s ease-out;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 60px 80px;
+    border-radius: 20px;
 }
 
 @keyframes slideInDown {
@@ -118,13 +121,16 @@ body::before {
 .weather-content {
     width: 100%;
     max-width: 1800px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 50px;
+    border-radius: 20px;
 }
 
 .section-title {
     font-size: 72px;
     color: #ffffff;
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 30px;
     font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
     text-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
     animation: slideInLeft 1s ease-out;
@@ -242,7 +248,7 @@ body::before {
     justify-content: center;
     height: 100%;
     background: rgba(0, 0, 0, 0.6);
-    padding: 40px;
+    padding: 20px;
 }
 
 .news-container {
