@@ -29,6 +29,9 @@ const weatherIcons = {
 // Slovenian day names
 const slovenianDays = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
 
+// Slovenian month names
+const slovenianMonths = ['Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij', 'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December'];
+
 // Initialize slideshow
 function initSlideshow() {
     showSlide(currentSlide);
@@ -476,13 +479,38 @@ document.addEventListener('DOMContentLoaded', () => {
     initSlideshow();
     fetchWeather();
     fetchNews();
+    updateDateTime(); // Initialize clock
     
     // Refresh weather and news every 10 minutes
     setInterval(() => {
         fetchWeather();
         fetchNews();
     }, 600000);
+    
+    // Update clock every second
+    setInterval(updateDateTime, 1000);
 });
+
+// Update date and time display
+function updateDateTime() {
+    const now = new Date();
+    const timeDisplay = document.getElementById('time-display');
+    const dateDisplay = document.getElementById('date-display');
+    
+    if (timeDisplay && dateDisplay) {
+        // Format time HH:MM
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        timeDisplay.textContent = `${hours}:${minutes}`;
+        
+        // Format date: Day, DD Month YYYY
+        const dayName = slovenianDays[now.getDay()];
+        const day = now.getDate();
+        const month = slovenianMonths[now.getMonth()];
+        const year = now.getFullYear();
+        dateDisplay.textContent = `${dayName}, ${day}. ${month} ${year}`;
+    }
+}
 
 // Add keyboard navigation
 document.addEventListener('keydown', (e) => {
