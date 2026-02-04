@@ -14,6 +14,10 @@
                 <h1 class="main-title">Šolski center Kranj</h1>
                 <p class="subtitle">Digitalni informacijski zaslon</p>
             </div>
+            <!-- Mini weather widget for today -->
+            <div class="mini-weather-widget" id="mini-weather-title">
+                <div class="loading-mini">Nalaganje vremena...</div>
+            </div>
         </div>
 
         <!-- Slide 2: Weather -->
@@ -29,10 +33,13 @@
         <!-- Slide 3: News -->
         <div class="slide" id="slide-news">
             <div class="news-content">
-                <h2 class="section-title">Novice</h2>
                 <div id="news-container" class="news-container">
                     <div class="loading">Nalaganje novic...</div>
                 </div>
+            </div>
+            <!-- Mini weather widget for today -->
+            <div class="mini-weather-widget" id="mini-weather-news">
+                <div class="loading-mini">Nalaganje vremena...</div>
             </div>
         </div>
     </div>
@@ -42,6 +49,12 @@
         <span class="indicator active" data-slide="0"></span>
         <span class="indicator" data-slide="1"></span>
         <span class="indicator" data-slide="2"></span>
+    </div>
+
+    <!-- Live date and time display -->
+    <div class="datetime-display" id="datetime-display">
+        <div class="time-display" id="time-display">--:--</div>
+        <div class="date-display" id="date-display">-- --- ----</div>
     </div>
 
     <script src="script.js"></script>

@@ -29,19 +29,22 @@ const weatherIcons = {
 // Slovenian day names
 const slovenianDays = ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'];
 
+// Slovenian month names
+const slovenianMonths = ['Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij', 'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December'];
+
 // Initialize slideshow
 function initSlideshow() {
     showSlide(currentSlide);
     startSlideInterval();
     
-    // Add click handlers to indicators
-    indicators.forEach((indicator, index) => {
-        indicator.addEventListener('click', () => {
-            currentSlide = index;
-            showSlide(currentSlide);
-            resetSlideTimer(); // Reset the timer when manually navigating
-        });
-    });
+    // Click navigation disabled - keyboard only
+    // indicators.forEach((indicator, index) => {
+    //     indicator.addEventListener('click', () => {
+    //         currentSlide = index;
+    //         showSlide(currentSlide);
+    //         resetSlideTimer(); // Reset the timer when manually navigating
+    //     });
+    // });
 }
 
 // Start the slide interval
@@ -198,12 +201,53 @@ function displayWeather(data) {
         
         weatherContainer.appendChild(dayElement);
     }
+    
+    // Display mini weather widgets for today (first day)
+    displayMiniWeather(data);
+}
+
+// Display mini weather widgets for today
+function displayMiniWeather(data) {
+    const miniWeatherTitle = document.getElementById('mini-weather-title');
+    const miniWeatherNews = document.getElementById('mini-weather-news');
+    
+    if (!data || !data.daily || data.daily.time.length === 0) {
+        return;
+    }
+    
+    const daily = data.daily;
+    const today = new Date(daily.time[0]);
+    const dayName = slovenianDays[today.getDay()];
+    const tempMax = Math.round(daily.temperature_2m_max[0]);
+    const tempMin = Math.round(daily.temperature_2m_min[0]);
+    const weatherCode = daily.weathercode[0];
+    const weatherInfo = getWeatherInfo(weatherCode);
+    
+    const miniWidgetHTML = `
+        <div class="mini-weather-icon">${weatherInfo.icon}</div>
+        <div class="mini-weather-info">
+            <div class="mini-weather-location">Kranj - ${dayName}</div>
+            <div class="mini-weather-temp">${tempMax}° / ${tempMin}°</div>
+            <div class="mini-weather-desc">${weatherInfo.desc}</div>
+        </div>
+    `;
+    
+    miniWeatherTitle.innerHTML = miniWidgetHTML;
+    miniWeatherNews.innerHTML = miniWidgetHTML;
 }
 
 // Display weather error
 function displayWeatherError() {
     const weatherContainer = document.getElementById('weather-container');
     weatherContainer.innerHTML = '<div class="loading">Napaka pri nalaganju vremenske napovedi</div>';
+    
+    // Update mini weather widgets with error state
+    const miniWeatherTitle = document.getElementById('mini-weather-title');
+    const miniWeatherNews = document.getElementById('mini-weather-news');
+    
+    const errorHTML = '<div class="loading-mini">Vreme nedostopno</div>';
+    if (miniWeatherTitle) miniWeatherTitle.innerHTML = errorHTML;
+    if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
 // Mock news data for fallback
@@ -443,13 +487,38 @@ document.addEventListener('DOMContentLoaded', () => {
     initSlideshow();
     fetchWeather();
     fetchNews();
+    updateDateTime(); // Initialize clock
     
     // Refresh weather and news every 10 minutes
     setInterval(() => {
         fetchWeather();
         fetchNews();
     }, 600000);
+    
+    // Update clock every second
+    setInterval(updateDateTime, 1000);
 });
+
+// Update date and time display
+function updateDateTime() {
+    const now = new Date();
+    const timeDisplay = document.getElementById('time-display');
+    const dateDisplay = document.getElementById('date-display');
+    
+    if (timeDisplay && dateDisplay) {
+        // Format time HH:MM
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        timeDisplay.textContent = `${hours}:${minutes}`;
+        
+        // Format date: Day, DD Month YYYY
+        const dayName = slovenianDays[now.getDay()];
+        const day = now.getDate();
+        const month = slovenianMonths[now.getMonth()];
+        const year = now.getFullYear();
+        dateDisplay.textContent = `${dayName}, ${day}. ${month} ${year}`;
+    }
+}
 
 // Add keyboard navigation
 document.addEventListener('keydown', (e) => {
