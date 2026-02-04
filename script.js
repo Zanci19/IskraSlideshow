@@ -77,6 +77,12 @@ function showSlide(index) {
     
     // Start news rotation when on news slide
     if (index === 2 && newsItems.length > 0) {
+        // Stop the main slide timer while on news slide
+        if (slideInterval) {
+            clearInterval(slideInterval);
+            slideInterval = null;
+        }
+        
         // Calculate current batch starting position
         currentNewsIndex = globalNewsStartIndex;
         newsShownCount = 1; // First news item in this batch counts as shown
@@ -400,7 +406,7 @@ function startNewsRotation() {
             
             currentSlide = 0; // Go back to first slide
             showSlide(currentSlide);
-            resetSlideTimer(); // Reset the main slide timer
+            startSlideInterval(); // Restart the main slide timer
             return;
         }
         
