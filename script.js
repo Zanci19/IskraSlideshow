@@ -1,8 +1,10 @@
 // Slideshow configuration
 const SLIDE_DURATION = 20000; // 20 seconds
 const NEWS_ROTATION_DURATION = 20000; // 20 seconds per news item
+const MAX_NEWS_TO_SHOW = 3; // Show only 3 news items before returning to first slide
 let currentSlide = 0;
 let currentNewsIndex = 0;
+let newsShownCount = 0; // Track how many news items have been shown
 let newsItems = [];
 let newsRotationInterval = null;
 let slideInterval = null; // Store the slide interval so we can reset it
@@ -74,6 +76,9 @@ function showSlide(index) {
     
     // Start news rotation when on news slide
     if (index === 2 && newsItems.length > 0) {
+        newsShownCount = 1; // First news item counts as shown
+        currentNewsIndex = 0; // Start from first news
+        displayCurrentNews();
         startNewsRotation();
     } else {
         stopNewsRotation();
@@ -381,7 +386,18 @@ function startNewsRotation() {
     if (newsItems.length <= 1) return; // No need to rotate if only one item
     
     newsRotationInterval = setInterval(() => {
+        // Check if we've shown enough news items before rotating
+        if (newsShownCount >= MAX_NEWS_TO_SHOW) {
+            stopNewsRotation();
+            currentSlide = 0; // Go back to first slide
+            showSlide(currentSlide);
+            resetSlideTimer(); // Reset the main slide timer
+            return;
+        }
+        
+        // Otherwise, show next news item and increment counter
         currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+        newsShownCount++;
         displayCurrentNews();
     }, NEWS_ROTATION_DURATION);
 }
