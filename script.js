@@ -240,6 +240,14 @@ function displayMiniWeather(data) {
 function displayWeatherError() {
     const weatherContainer = document.getElementById('weather-container');
     weatherContainer.innerHTML = '<div class="loading">Napaka pri nalaganju vremenske napovedi</div>';
+    
+    // Update mini weather widgets with error state
+    const miniWeatherTitle = document.getElementById('mini-weather-title');
+    const miniWeatherNews = document.getElementById('mini-weather-news');
+    
+    const errorHTML = '<div class="loading-mini">Vreme nedostopno</div>';
+    if (miniWeatherTitle) miniWeatherTitle.innerHTML = errorHTML;
+    if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
 // Mock news data for fallback
