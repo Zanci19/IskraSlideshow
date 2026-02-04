@@ -9,8 +9,10 @@ let newsShownCount = 0; // Track how many news items have been shown in current 
 let newsItems = [];
 let newsRotationInterval = null;
 let slideInterval = null; // Store the slide interval so we can reset it
+let progressAnimationId = null;
 const slides = document.querySelectorAll('.slide');
 const indicators = document.querySelectorAll('.indicator');
+const progressBar = document.getElementById('slide-progress-bar');
 
 // Weather icons mapping
 const weatherIcons = {
@@ -93,6 +95,8 @@ function showSlide(index) {
         startNewsRotation();
     } else {
         stopNewsRotation();
+        startProgressBar(SLIDE_DURATION);
+        resetSlideTimer();
     }
 }
 
@@ -230,7 +234,6 @@ function displayWeatherError() {
 // Fetch news from RSS feed
 async function fetchNews() {
     try {
-        // Use the RSS URL directly without CORS proxy
         const RSS_URL = 'https://sckr.si/?show=1000&format=feed&type=rss';
         
         const response = await fetch(RSS_URL);
@@ -239,8 +242,18 @@ async function fetchNews() {
         const text = await response.text();
         parseRSSFeed(text);
     } catch (error) {
-        console.error('Error fetching news:', error);
-        displayNewsError();
+        console.warn('Direct RSS fetch failed, trying proxy:', error);
+        try {
+            const RSS_URL = 'https://sckr.si/?show=1000&format=feed&type=rss';
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(RSS_URL)}`;
+            const proxyResponse = await fetch(proxyUrl);
+            if (!proxyResponse.ok) throw new Error('Proxy fetch error');
+            const proxyText = await proxyResponse.text();
+            parseRSSFeed(proxyText);
+        } catch (proxyError) {
+            console.error('Error fetching news via proxy:', proxyError);
+            displayNewsError();
+        }
     }
 }
 
@@ -326,14 +339,16 @@ function displayCurrentNews() {
     const newsContainer = document.getElementById('news-container');
     const news = newsItems[currentNewsIndex];
     const hasImage = Boolean(news.image);
+
+    startProgressBar(NEWS_ROTATION_DURATION);
     
     newsContainer.innerHTML = `
         <div class="news-item${hasImage ? '' : ' no-image'}">
             <div class="news-text">
                 <div class="news-title">${news.title}</div>
                 ${news.date ? `<div class="news-date">📅 ${news.date}</div>` : ''}
-                ${news.description ? `<div class="news-description">${news.description}</div>` : ''}
-                <a href="${news.link}" class="news-link" target="_blank">Preberi več →</a>
+                ${news.description ? `<div class="news-description">${news.description}</div>` : '<div class="news-description">Več informacij na sckr.si</div>'}
+                <a href="${news.link}" class="news-link" target="_blank" rel="noopener noreferrer">Preberi več →</a>
             </div>
             ${hasImage ? `<img src="${news.image}" alt="${news.title}" class="news-image" onerror="this.closest('.news-item').classList.add('no-image'); this.remove();">` : ''}
         </div>
@@ -345,6 +360,7 @@ function startNewsRotation() {
     stopNewsRotation(); // Clear any existing interval
     
     if (newsItems.length <= 1) {
+        startProgressBar(NEWS_ROTATION_DURATION);
         setTimeout(() => {
             currentSlide = 0;
             showSlide(currentSlide);
@@ -410,6 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh weather and news every 10 minutes
     setInterval(() => {
         fetchWeather();
+        fetchNews();
     }, 600000);
     
     // Update clock every second
@@ -442,8 +459,36 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') {
         currentSlide = (currentSlide + 1) % slides.length;
         showSlide(currentSlide);
+        if (currentSlide !== 2) {
+            resetSlideTimer();
+        }
     } else if (e.key === 'ArrowLeft') {
         currentSlide = (currentSlide - 1 + slides.length) % slides.length;
         showSlide(currentSlide);
+        if (currentSlide !== 2) {
+            resetSlideTimer();
+        }
     }
 });
+
+function startProgressBar(duration) {
+    if (!progressBar) return;
+    if (progressAnimationId) {
+        cancelAnimationFrame(progressAnimationId);
+    }
+
+    const startTime = performance.now();
+    progressBar.style.width = '0%';
+
+    const animate = (timestamp) => {
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        progressBar.style.width = `${progress * 100}%`;
+
+        if (progress < 1) {
+            progressAnimationId = requestAnimationFrame(animate);
+        }
+    };
+
+    progressAnimationId = requestAnimationFrame(animate);
+}

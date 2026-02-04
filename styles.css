@@ -13,6 +13,9 @@ body {
     min-height: 100vh;
     overflow: hidden;
     position: relative;
+    color: #ffffff;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
 }
 
 @keyframes gradientShift {
@@ -35,6 +38,15 @@ body::before {
         radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
     animation: floatBg 20s ease-in-out infinite;
     z-index: 0;
+}
+
+body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.35) 100%);
+    z-index: 0;
+    pointer-events: none;
 }
 
 @keyframes floatBg {
@@ -64,6 +76,7 @@ body::before {
     align-items: center;
     justify-content: center;
     padding: 60px;
+    gap: 40px;
 }
 
 /* News slide specific - fullscreen */
@@ -80,9 +93,11 @@ body::before {
 .title-content {
     text-align: center;
     animation: slideInDown 1.5s ease-out;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 60px 80px;
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75), rgba(40, 40, 70, 0.75));
+    padding: 70px 90px;
+    border-radius: 28px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes slideInDown {
@@ -97,7 +112,7 @@ body::before {
 }
 
 .main-title {
-    font-size: 150px;
+    font-size: 165px;
     font-weight: 800;
     font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
     color: #ffffff;
@@ -113,7 +128,7 @@ body::before {
 }
 
 .subtitle {
-    font-size: 52px;
+    font-size: 60px;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 300;
     letter-spacing: 4px;
@@ -130,13 +145,15 @@ body::before {
 .weather-content {
     width: 100%;
     max-width: 1800px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 50px;
-    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 60px;
+    border-radius: 28px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
 }
 
 .section-title {
-    font-size: 72px;
+    font-size: 76px;
     color: #ffffff;
     text-align: center;
     margin-bottom: 30px;
@@ -159,7 +176,7 @@ body::before {
 .weather-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 25px;
+    gap: 30px;
     animation: fadeInUp 1.2s ease-out;
 }
 
@@ -175,9 +192,9 @@ body::before {
 }
 
 .weather-day {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 30px 20px;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 24px;
+    padding: 34px 24px;
     text-align: center;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -209,7 +226,7 @@ body::before {
 }
 
 .day-name {
-    font-size: 34px;
+    font-size: 36px;
     font-weight: 700;
     color: #667eea;
     margin-bottom: 15px;
@@ -217,7 +234,7 @@ body::before {
 }
 
 .weather-icon {
-    font-size: 96px;
+    font-size: 102px;
     margin: 20px 0;
     animation: gentleFloat 4s ease-in-out infinite;
 }
@@ -228,21 +245,21 @@ body::before {
 }
 
 .weather-temp {
-    font-size: 42px;
+    font-size: 46px;
     font-weight: 700;
     color: #333;
     margin: 15px 0;
 }
 
 .weather-description {
-    font-size: 24px;
+    font-size: 26px;
     color: #666;
     text-transform: capitalize;
     margin-bottom: 10px;
 }
 
 .weather-details {
-    font-size: 20px;
+    font-size: 22px;
     color: #888;
     margin-top: 10px;
 }
@@ -256,15 +273,28 @@ body::before {
     align-items: center;
     justify-content: center;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 0;
+    background: rgba(0, 0, 0, 0.65);
+    padding: 60px;
+    gap: 30px;
+}
+
+.news-header {
+    width: 100%;
+    text-align: center;
+}
+
+.news-subtitle {
+    font-size: 30px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 10px;
+    letter-spacing: 1px;
 }
 
 .news-container {
     width: 100%;
     max-width: none;
     animation: slideInRight 1s ease-out;
-    height: 100%;
+    height: calc(100% - 140px);
 }
 
 @keyframes slideInRight {
@@ -281,15 +311,15 @@ body::before {
 .news-item {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 255, 0.98));
     border-radius: 0;
-    padding: 80px;
+    padding: 70px;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 
                 0 0 40px rgba(102, 126, 234, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 1);
-    border-left: 6px solid #667eea;
+    border-left: 8px solid #667eea;
     animation: fadeInScale 0.8s ease-out;
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 40px;
+    gap: 50px;
     align-items: stretch;
     height: 100%;
     position: relative;
@@ -397,7 +427,7 @@ body::before {
 /* Mini weather widget */
 .mini-weather-widget {
     position: fixed;
-    bottom: 80px;
+    bottom: 90px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(40, 40, 60, 0.85));
@@ -446,7 +476,7 @@ body::before {
 }
 
 .mini-weather-widget .mini-weather-temp {
-    font-size: 48px;
+    font-size: 50px;
     color: #ffffff;
     font-weight: 800;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
@@ -461,7 +491,7 @@ body::before {
 /* Slide indicators */
 .slide-indicators {
     position: fixed;
-    bottom: 40px;
+    bottom: 35px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -470,8 +500,8 @@ body::before {
 }
 
 .indicator {
-    width: 15px;
-    height: 15px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.5);
     transition: all 0.3s ease;
@@ -503,7 +533,7 @@ body::before {
 }
 
 .time-display {
-    font-size: 48px;
+    font-size: 52px;
     font-weight: 800;
     color: #ffffff;
     font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
@@ -512,25 +542,95 @@ body::before {
 }
 
 .date-display {
-    font-size: 24px;
+    font-size: 26px;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 600;
     margin-top: 8px;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
+/* Branding badge */
+.brand-badge {
+    position: fixed;
+    top: 30px;
+    left: 40px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 22px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.78), rgba(40, 40, 60, 0.78));
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+.brand-logo {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    background: #667eea;
+    color: #ffffff;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.brand-name {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.brand-tagline {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Slide progress */
+.slide-progress {
+    position: fixed;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, 70vw);
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    overflow: hidden;
+    z-index: 10;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.slide-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffffff, #a7b9ff);
+    border-radius: 999px;
+    transition: width 0.2s linear;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-    .main-title { font-size: 100px; }
-    .subtitle { font-size: 40px; }
-    .section-title { font-size: 56px; }
+    .main-title { font-size: 120px; }
+    .subtitle { font-size: 46px; }
+    .section-title { font-size: 60px; }
     .weather-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 }
 
 @media (max-width: 768px) {
-    .main-title { font-size: 70px; }
-    .subtitle { font-size: 28px; }
-    .section-title { font-size: 42px; }
+    .main-title { font-size: 80px; }
+    .subtitle { font-size: 32px; }
+    .section-title { font-size: 48px; }
     .slide { padding: 30px; }
     .news-item {
         grid-template-columns: 1fr;
