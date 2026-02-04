@@ -84,7 +84,7 @@ function showSlide(index) {
         }
         
         // Calculate current batch starting position
-        currentNewsIndex = globalNewsStartIndex;
+        currentNewsIndex = globalNewsStartIndex % newsItems.length;
         newsShownCount = 1; // First news item in this batch counts as shown
         displayCurrentNews();
         startNewsRotation();
@@ -397,7 +397,7 @@ function startNewsRotation() {
             stopNewsRotation();
             
             // Update global position for next visit to news slide
-            globalNewsStartIndex = globalNewsStartIndex + MAX_NEWS_TO_SHOW;
+            globalNewsStartIndex += MAX_NEWS_TO_SHOW;
             
             // Wrap around to beginning if we've shown all news
             if (globalNewsStartIndex >= newsItems.length) {
