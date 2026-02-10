@@ -63,8 +63,9 @@ crontab -e
 
 Add a line to run the script daily at 6 AM:
 ```
-0 6 * * * cd /path/to/IskraSlideshow && /usr/bin/python3 fetch_meals.py >> /var/log/meals_update.log 2>&1
+0 6 * * * cd /path/to/IskraSlideshow && /usr/bin/python3 fetch_meals.py >> ~/meals_update.log 2>&1
 ```
+Note: The log file will be created in your home directory (~). You can change this path as needed.
 
 ### On Windows (Task Scheduler)
 

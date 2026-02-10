@@ -128,18 +128,31 @@ def update_index_html(meals_data, filepath='index.html'):
     with open(filepath, 'r', encoding='utf-8') as f:
         html_content = f.read()
     
-    # Find and replace the JSON content in the embedded-meals-data script tag
-    json_str = json.dumps(meals_data, indent=2, ensure_ascii=False)
+    # Find the script tag boundaries
+    start_tag = '<script id="embedded-meals-data" type="application/json">'
+    end_tag = '</script>'
     
-    # Pattern to match the script tag and its content
-    pattern = r'(<script id="embedded-meals-data" type="application/json">)\s*\{[\s\S]*?\}\s*(</script>)'
-    replacement = rf'\1\n{json_str}\n    \2'
-    
-    new_html_content = re.sub(pattern, replacement, html_content)
-    
-    if new_html_content == html_content:
+    start_idx = html_content.find(start_tag)
+    if start_idx == -1:
         print("WARNING: Could not find embedded-meals-data script tag in index.html")
         return False
+    
+    # Find the end tag after the start tag
+    search_start = start_idx + len(start_tag)
+    end_idx = html_content.find(end_tag, search_start)
+    if end_idx == -1:
+        print("WARNING: Could not find closing script tag in index.html")
+        return False
+    
+    # Build the new JSON string
+    json_str = json.dumps(meals_data, indent=2, ensure_ascii=False)
+    
+    # Construct the new HTML content
+    new_html_content = (
+        html_content[:start_idx + len(start_tag)] +
+        '\n' + json_str + '\n    ' +
+        html_content[end_idx:]
+    )
     
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(new_html_content)
