@@ -82,7 +82,22 @@ The daily meals menu is embedded directly in `index.html` to avoid CORS issues w
 </script>
 ```
 
-To update the meals menu, edit this JSON directly in `index.html` with data from the moj.asistent API.
+#### Automatic Updates (Recommended)
+Use the provided Python script to automatically fetch and update meals data from easistent.com:
+
+```bash
+# One-time setup
+cp .env.example .env
+# Edit .env with your easistent.com credentials
+
+# Run the script
+python fetch_meals.py
+```
+
+See [README-MEALS.md](README-MEALS.md) for detailed instructions on setup and automation.
+
+#### Manual Updates
+Alternatively, edit the JSON directly in `index.html` with data from the moj.asistent API.
 
 ## Controls
 
