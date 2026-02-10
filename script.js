@@ -226,6 +226,123 @@ function displayWeatherError() {
     if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
+// Fetch meals data
+async function fetchMeals() {
+    try {
+        // Try to fetch from local backend API endpoint
+        const response = await fetch('/api/meals');
+        if (!response.ok) throw new Error('Meals API error');
+        
+        const data = await response.json();
+        displayMeals(data);
+    } catch (error) {
+        console.warn('Error fetching meals from API:', error);
+        // Fallback: try to load from a static JSON file
+        try {
+            const fallbackResponse = await fetch('/meals.json');
+            if (!fallbackResponse.ok) throw new Error('Meals JSON not found');
+            const fallbackData = await fallbackResponse.json();
+            displayMeals(fallbackData);
+        } catch (fallbackError) {
+            console.error('Error fetching meals:', fallbackError);
+            displayMealsError();
+        }
+    }
+}
+
+// Display meals data
+function displayMeals(data) {
+    const mealsContainer = document.getElementById('meals-container');
+    if (!mealsContainer) return;
+    
+    try {
+        // Check if data has items array
+        if (!data.items || data.items.length === 0) {
+            mealsContainer.innerHTML = '<div class="loading">Ni razpoložljivih podatkov o jedilniku</div>';
+            return;
+        }
+        
+        const todayMeals = data.items[0]; // Get first item (today's meals)
+        if (!todayMeals || !todayMeals.menus) {
+            mealsContainer.innerHTML = '<div class="loading">Ni razpoložljivih podatkov o jedilniku</div>';
+            return;
+        }
+        
+        const menus = todayMeals.menus;
+        let mealsHTML = '<div class="meals-grid">';
+        
+        // Display breakfast
+        if (menus.breakfast && menus.breakfast.length > 0) {
+            mealsHTML += '<div class="meal-section"><h3>Zajtrk</h3>';
+            menus.breakfast.forEach(meal => {
+                mealsHTML += `
+                    <div class="meal-item">
+                        <div class="meal-name">${meal.name}</div>
+                        <div class="meal-description">${meal.description}</div>
+                    </div>
+                `;
+            });
+            mealsHTML += '</div>';
+        }
+        
+        // Display snack (malica)
+        if (menus.snack && menus.snack.length > 0) {
+            mealsHTML += '<div class="meal-section"><h3>Malica</h3>';
+            menus.snack.forEach(meal => {
+                mealsHTML += `
+                    <div class="meal-item">
+                        <div class="meal-name">${meal.name}</div>
+                        <div class="meal-description">${meal.description}</div>
+                    </div>
+                `;
+            });
+            mealsHTML += '</div>';
+        }
+        
+        // Display lunch
+        if (menus.lunch && menus.lunch.length > 0) {
+            mealsHTML += '<div class="meal-section"><h3>Kosilo</h3>';
+            menus.lunch.forEach(meal => {
+                mealsHTML += `
+                    <div class="meal-item">
+                        <div class="meal-name">${meal.name}</div>
+                        <div class="meal-description">${meal.description}</div>
+                    </div>
+                `;
+            });
+            mealsHTML += '</div>';
+        }
+        
+        // Display afternoon snack
+        if (menus.afternoon_snack && menus.afternoon_snack.length > 0) {
+            mealsHTML += '<div class="meal-section"><h3>Popoldanska malica</h3>';
+            menus.afternoon_snack.forEach(meal => {
+                mealsHTML += `
+                    <div class="meal-item">
+                        <div class="meal-name">${meal.name}</div>
+                        <div class="meal-description">${meal.description}</div>
+                    </div>
+                `;
+            });
+            mealsHTML += '</div>';
+        }
+        
+        mealsHTML += '</div>';
+        mealsContainer.innerHTML = mealsHTML;
+    } catch (error) {
+        console.error('Error displaying meals:', error);
+        displayMealsError();
+    }
+}
+
+// Display meals error
+function displayMealsError() {
+    const mealsContainer = document.getElementById('meals-container');
+    if (mealsContainer) {
+        mealsContainer.innerHTML = '<div class="loading">Napaka pri nalaganju jedilnika</div>';
+    }
+}
+
 // Fetch news from RSS feed
 async function fetchNews() {
     try {
@@ -399,12 +516,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initSlideshow();
     fetchWeather();
     fetchNews();
+    fetchMeals();
     updateDateTime(); // Initialize clock
     
-    // Refresh weather and news every 10 minutes
+    // Refresh weather, news and meals every 10 minutes
     setInterval(() => {
         fetchWeather();
         fetchNews();
+        fetchMeals();
     }, 600000);
     
     // Update clock every second

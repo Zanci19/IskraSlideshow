@@ -583,6 +583,82 @@ body::after {
     transition: width 0.2s linear;
 }
 
+/* Meals Slide Styles */
+.meals-content {
+    width: 100%;
+    max-width: min(1920px, 96vw);
+    animation: slideInRight 1s ease-out;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 2vw, 30px);
+}
+
+.meals-container {
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 1.8vw, 28px);
+    animation: slideInRight 1s ease-out;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+    padding-right: 16px;
+}
+
+.meals-grid {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 1.8vw, 28px);
+}
+
+.meal-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(247, 249, 255, 0.95));
+    border-radius: clamp(14px, 1.2vw, 22px);
+    padding: clamp(18px, 1.8vw, 30px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35),
+                0 0 24px rgba(102, 126, 234, 0.18);
+    border-left: 6px solid #667eea;
+    animation: fadeInScale 0.65s ease-out;
+}
+
+.meal-section h3 {
+    color: #1f2937;
+    font-size: clamp(20px, 2vw, 28px);
+    font-weight: 700;
+    margin-bottom: clamp(12px, 1.2vw, 18px);
+    letter-spacing: 0.5px;
+}
+
+.meal-item {
+    background: linear-gradient(135deg, rgba(245, 247, 255, 0.8), rgba(240, 245, 255, 0.8));
+    border-radius: clamp(8px, 0.8vw, 14px);
+    padding: clamp(12px, 1.2vw, 18px);
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.meal-item:hover {
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+    transform: translateX(4px);
+}
+
+.meal-name {
+    color: #1f2937;
+    font-size: clamp(16px, 1.5vw, 22px);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.meal-description {
+    color: #4b5563;
+    font-size: clamp(13px, 1.1vw, 16px);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1400px) {
     .main-title img { width: min(440px, 76vw); }
