@@ -62,6 +62,28 @@ The news feed URL is set to `https://sckr.si/?show=1000&format=feed&type=rss`. T
 const RSS_URL = 'https://sckr.si/?show=1000&format=feed&type=rss';
 ```
 
+### Meals Data
+The daily meals menu is embedded directly in `index.html` to avoid CORS issues when opening the file directly:
+```html
+<script id="embedded-meals-data" type="application/json">
+{
+  "items": [
+    {
+      "date": "2026-02-10",
+      "menus": {
+        "breakfast": [],
+        "snack": [...],
+        "lunch": [],
+        "afternoon_snack": []
+      }
+    }
+  ]
+}
+</script>
+```
+
+To update the meals menu, edit this JSON directly in `index.html` with data from the moj.asistent API.
+
 ## Controls
 
 ### Keyboard Navigation
@@ -86,6 +108,19 @@ Works best in modern browsers:
 5. **Ensure stable internet connection** for live weather and news
 
 ## Troubleshooting
+
+### CORS Error When Opening index.html Directly
+**Issue**: "Access to fetch at 'file://...' has been blocked by CORS policy"
+
+**Solution**: The meals data is now embedded directly in `index.html` to avoid CORS issues. The slideshow will automatically use this embedded data when opened from the file system.
+
+To update the meals menu:
+1. Edit the `<script id="embedded-meals-data">` section in `index.html`
+2. Replace the JSON content with your updated meals data from the moj.asistent API
+3. Ensure the JSON is valid (you can use a JSON validator tool)
+4. Save the file and refresh the page
+
+**Note**: The `meals.json` file is kept for reference and will be used as a fallback when the slideshow is served over HTTP (e.g., from a web server or API endpoint).
 
 ### Weather or News Not Loading
 - Check internet connection
