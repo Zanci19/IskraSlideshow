@@ -226,6 +226,27 @@ function displayWeatherError() {
     if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
+const FALLBACK_MEALS_DATA = {
+    items: [
+        {
+            date: '',
+            menus: {
+                breakfast: [],
+                snack: [
+                    {
+                        id: 'fallback-1',
+                        name: 'Jedilnik trenutno ni dosegljiv',
+                        description: 'Prikazujemo nadomestne podatke. Za osvežitev poskusite znova pozneje.',
+                        is_primary: true
+                    }
+                ],
+                lunch: [],
+                afternoon_snack: []
+            }
+        }
+    ]
+};
+
 // Fetch meals data
 async function fetchMeals() {
     const mealsEndpoints = window.location.protocol === 'file:'
@@ -247,7 +268,7 @@ async function fetchMeals() {
     }
 
     console.error('Error fetching meals: no available meals endpoint responded successfully.');
-    displayMealsError();
+    displayMeals(FALLBACK_MEALS_DATA);
 }
 
 // Display meals data
