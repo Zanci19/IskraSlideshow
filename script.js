@@ -228,26 +228,26 @@ function displayWeatherError() {
 
 // Fetch meals data
 async function fetchMeals() {
-    try {
-        // Try to fetch from local backend API endpoint
-        const response = await fetch('/api/meals');
-        if (!response.ok) throw new Error('Meals API error');
-        
-        const data = await response.json();
-        displayMeals(data);
-    } catch (error) {
-        console.warn('Error fetching meals from API:', error);
-        // Fallback: try to load from a static JSON file
+    const mealsEndpoints = window.location.protocol === 'file:'
+        ? ['./meals.json', 'meals.json']
+        : ['/api/meals', './api/meals', '/meals.json', './meals.json'];
+
+    for (const endpoint of mealsEndpoints) {
         try {
-            const fallbackResponse = await fetch('/meals.json');
-            if (!fallbackResponse.ok) throw new Error('Meals JSON not found');
-            const fallbackData = await fallbackResponse.json();
-            displayMeals(fallbackData);
-        } catch (fallbackError) {
-            console.error('Error fetching meals:', fallbackError);
-            displayMealsError();
+            const response = await fetch(endpoint);
+            if (!response.ok) continue;
+
+            const data = await response.json();
+            displayMeals(data);
+            return;
+        } catch (error) {
+            // Keep trying alternative endpoints
+            console.warn(`Failed loading meals from ${endpoint}:`, error);
         }
     }
+
+    console.error('Error fetching meals: no available meals endpoint responded successfully.');
+    displayMealsError();
 }
 
 // Display meals data
