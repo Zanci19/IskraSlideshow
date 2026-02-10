@@ -1,11 +1,9 @@
 // Slideshow configuration
 const SLIDE_DURATION = 20000; // 20 seconds
-const NEWS_ROTATION_DURATION = 20000; // 20 seconds per news item
-const MAX_NEWS_TO_SHOW = 3; // Show only 3 news items before returning to first slide
+const NEWS_ROTATION_DURATION = 20000; // 20 seconds per 3-news batch
+const NEWS_BATCH_SIZE = 3; // Always display up to 3 news items per news loop
 let currentSlide = 0;
 let globalNewsStartIndex = 0; // Global position tracking - persists across slide transitions
-let currentNewsIndex = 0; // Current index within the 3-news batch
-let newsShownCount = 0; // Track how many news items have been shown in current batch
 let newsItems = [];
 let newsRotationInterval = null;
 let slideInterval = null; // Store the slide interval so we can reset it
@@ -87,11 +85,8 @@ function showSlide(index) {
             clearInterval(slideInterval);
             slideInterval = null;
         }
-        
-        // Calculate current batch starting position
-        currentNewsIndex = globalNewsStartIndex % newsItems.length;
-        newsShownCount = 1; // First news item in this batch counts as shown
-        displayCurrentNews();
+
+        displayCurrentNewsBatch();
         startNewsRotation();
     } else {
         stopNewsRotation();
@@ -321,10 +316,9 @@ function parseRSSFeed(xmlText) {
     // RSS feeds typically return newest items first, which is what we want
     // If the feed returns oldest first, we would need to reverse: newsItems.reverse();
     
-    // Display first news item
+    // Display first batch of news
     globalNewsStartIndex = 0; // Reset global position when fresh news is loaded
-    currentNewsIndex = 0;
-    displayCurrentNews();
+    displayCurrentNewsBatch();
     
     // Start rotation if on news slide
     if (currentSlide === 2) {
@@ -332,73 +326,57 @@ function parseRSSFeed(xmlText) {
     }
 }
 
-// Display current news item
-function displayCurrentNews() {
+// Display current batch of news items (up to 3)
+function displayCurrentNewsBatch() {
     if (newsItems.length === 0) return;
-    
+
     const newsContainer = document.getElementById('news-container');
-    const news = newsItems[currentNewsIndex];
-    const hasImage = Boolean(news.image);
+    if (!newsContainer) return;
+
+    const batchItems = [];
+    const batchSize = Math.min(NEWS_BATCH_SIZE, newsItems.length);
+
+    for (let i = 0; i < batchSize; i++) {
+        const itemIndex = (globalNewsStartIndex + i) % newsItems.length;
+        batchItems.push(newsItems[itemIndex]);
+    }
 
     startProgressBar(NEWS_ROTATION_DURATION);
-    
-    newsContainer.innerHTML = `
+
+    newsContainer.innerHTML = batchItems.map((news) => {
+        const hasImage = Boolean(news.image);
+
+        return `
         <div class="news-item${hasImage ? '' : ' no-image'}">
+            ${hasImage ? `<img src="${news.image}" alt="${news.title}" class="news-image" onerror="this.closest('.news-item').classList.add('no-image'); this.remove();">` : ''}
             <div class="news-text">
                 <div class="news-title">${news.title}</div>
                 ${news.date ? `<div class="news-date">📅 ${news.date}</div>` : ''}
                 ${news.description ? `<div class="news-description">${news.description}</div>` : '<div class="news-description">Več informacij na sckr.si</div>'}
                 <a href="${news.link}" class="news-link" target="_blank" rel="noopener noreferrer">Preberi več →</a>
             </div>
-            ${hasImage ? `<img src="${news.image}" alt="${news.title}" class="news-image" onerror="this.closest('.news-item').classList.add('no-image'); this.remove();">` : ''}
         </div>
-    `;
+        `;
+    }).join('');
 }
 
 // Start news rotation
 function startNewsRotation() {
     stopNewsRotation(); // Clear any existing interval
-    
-    if (newsItems.length <= 1) {
-        startProgressBar(NEWS_ROTATION_DURATION);
-        setTimeout(() => {
-            currentSlide = 0;
-            showSlide(currentSlide);
-            startSlideInterval();
-        }, NEWS_ROTATION_DURATION);
-        return;
-    }
-    
-    newsRotationInterval = setInterval(() => {
-        // Check if we've shown enough news items before rotating
-        if (newsShownCount >= MAX_NEWS_TO_SHOW) {
-            stopNewsRotation();
-            
-            // Update global position for next visit to news slide
-            globalNewsStartIndex += MAX_NEWS_TO_SHOW;
-            
-            // Wrap around to beginning if we've shown all news
-            if (globalNewsStartIndex >= newsItems.length) {
-                globalNewsStartIndex = 0;
-            }
-            
-            currentSlide = 0; // Go back to first slide
-            showSlide(currentSlide);
-            startSlideInterval(); // Restart the main slide timer
-            return;
-        }
-        
-        // Otherwise, show next news item and increment counter
-        currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
-        newsShownCount++;
-        displayCurrentNews();
+
+    newsRotationInterval = setTimeout(() => {
+        globalNewsStartIndex = (globalNewsStartIndex + NEWS_BATCH_SIZE) % newsItems.length;
+
+        currentSlide = 0; // Go back to first slide
+        showSlide(currentSlide);
+        startSlideInterval(); // Restart the main slide timer
     }, NEWS_ROTATION_DURATION);
 }
 
 // Stop news rotation
 function stopNewsRotation() {
     if (newsRotationInterval) {
-        clearInterval(newsRotationInterval);
+        clearTimeout(newsRotationInterval);
         newsRotationInterval = null;
     }
 }
