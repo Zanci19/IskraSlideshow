@@ -249,6 +249,20 @@ const FALLBACK_MEALS_DATA = {
 
 // Fetch meals data
 async function fetchMeals() {
+    // First, check if there's embedded meals data in the HTML
+    const embeddedMealsElement = document.getElementById('embedded-meals-data');
+    if (embeddedMealsElement) {
+        try {
+            const embeddedData = JSON.parse(embeddedMealsElement.textContent);
+            console.log('Using embedded meals data from HTML');
+            displayMeals(embeddedData);
+            return;
+        } catch (error) {
+            console.warn('Failed to parse embedded meals data:', error);
+        }
+    }
+
+    // If no embedded data or parsing failed, try fetching from endpoints
     const mealsEndpoints = window.location.protocol === 'file:'
         ? ['./meals.json', 'meals.json']
         : ['/api/meals', './api/meals', '/meals.json', './meals.json'];

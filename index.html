@@ -77,6 +77,60 @@
         <div class="date-display" id="date-display">-- --- ----</div>
     </div>
 
+    <!-- Embedded meals data to avoid CORS issues when opening from file:// -->
+    <script id="embedded-meals-data" type="application/json">
+{
+  "items": [
+    {
+      "date": "2026-02-10",
+      "menus": {
+        "breakfast": [],
+        "snack": [
+          {
+            "id": 75331,
+            "name": "Priljubljeni meni",
+            "description": "PEČENO PIŠČANČJE BEDRO,\nPOMRI,\nSOLATA",
+            "is_primary": false
+          },
+          {
+            "id": 75339,
+            "name": "Meni 2",
+            "description": "ZELENJAVNA MINEŠTRA Z\nSVINJSKIM MESOM (Gpš,J,L)\nPECIVO (Gpš,J,L,O)",
+            "is_primary": false
+          },
+          {
+            "id": 75347,
+            "name": "Brezmesni meni",
+            "description": "LAZANJA Z OSLIČEM IN\nŠPINAČO (Gpš,J,L,R1)\nSOLATA",
+            "is_primary": false
+          },
+          {
+            "id": 75355,
+            "name": "Dodatni meni",
+            "description": "MUSLI, MLEKO,\nJOGURT,\nFRUTABELA",
+            "is_primary": false
+          },
+          {
+            "id": 75363,
+            "name": "Hladna malica",
+            "description": "SENDVIČ\nNAPITEK 0,5L",
+            "is_primary": true
+          },
+          {
+            "id": 75371,
+            "name": "6. meni",
+            "description": "ČOKOLINO (Gpš,L)\nPECIVO",
+            "is_primary": false
+          }
+        ],
+        "lunch": [],
+        "afternoon_snack": []
+      }
+    }
+  ]
+}
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>
