@@ -1,18 +1,14 @@
 # Meals Data Fetcher
 
-This Python script fetches the daily meal menu from easistent.com API and automatically updates both `meals.json` and the embedded data in `index.html`.
+This JavaScript script fetches the daily meal menu from easistent.com API and automatically updates both `meals.json` and the embedded data in `index.html`.
 
 ## Prerequisites
 
-- Python 3.6 or higher
-- `requests` library
+- Node.js 18 or higher
 
 ## Installation
 
-1. Install the required Python package:
-```bash
-pip install requests
-```
+No additional dependencies are required.
 
 ## Setup
 
@@ -34,14 +30,14 @@ EASISTENT_PASSWORD=your_password_here
 Run the script from the repository directory:
 
 ```bash
-python fetch_meals.py
+node fetch_meals.js
 ```
 
 or make it executable and run:
 
 ```bash
-chmod +x fetch_meals.py
-./fetch_meals.py
+chmod +x fetch_meals.js
+./fetch_meals.js
 ```
 
 The script will:
@@ -63,7 +59,7 @@ crontab -e
 
 Add a line to run the script daily at 6 AM:
 ```
-0 6 * * * cd /path/to/IskraSlideshow && /usr/bin/python3 fetch_meals.py >> ~/meals_update.log 2>&1
+0 6 * * * cd /path/to/IskraSlideshow && /usr/bin/node fetch_meals.js >> ~/meals_update.log 2>&1
 ```
 Note: The log file will be created in your home directory (~). You can change this path as needed.
 
@@ -73,8 +69,8 @@ Note: The log file will be created in your home directory (~). You can change th
 2. Create a new Basic Task
 3. Set it to run daily at your preferred time
 4. Action: Start a program
-5. Program: `python`
-6. Arguments: `C:\path\to\IskraSlideshow\fetch_meals.py`
+5. Program: `node`
+6. Arguments: `C:\path\to\IskraSlideshow\fetch_meals.js`
 7. Start in: `C:\path\to\IskraSlideshow`
 
 ## Troubleshooting
@@ -85,13 +81,13 @@ Note: The log file will be created in your home directory (~). You can change th
 - Verify your internet connection
 
 ### Script can't find credentials
-- Make sure the `.env` file exists in the same directory as `fetch_meals.py`
+- Make sure the `.env` file exists in the same directory as `fetch_meals.js`
 - Check that the file is properly formatted (KEY=value, no spaces around =)
 - Try setting environment variables directly:
   ```bash
   export EASISTENT_USERNAME="your_email@example.com"
   export EASISTENT_PASSWORD="your_password"
-  python fetch_meals.py
+  node fetch_meals.js
   ```
 
 ### Script updates meals.json but not index.html

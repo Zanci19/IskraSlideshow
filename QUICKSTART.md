@@ -25,7 +25,7 @@ EASISTENT_USERNAME=your_email@example.com
 EASISTENT_PASSWORD=your_password
 
 # Step 2: Test the script
-python fetch_meals.py
+node fetch_meals.js
 
 # You should see:
 # ============================================================
@@ -44,7 +44,7 @@ python fetch_meals.py
 # Step 3: Automate (optional)
 crontab -e
 # Add this line:
-0 6 * * * cd /path/to/IskraSlideshow && python3 fetch_meals.py >> ~/meals_update.log 2>&1
+0 6 * * * cd /path/to/IskraSlideshow && node fetch_meals.js >> ~/meals_update.log 2>&1
 ```
 
 ## What Each Slide Shows
@@ -70,7 +70,7 @@ Each meal shows:
 
 - `index.html` - Main slideshow file (contains embedded meals)
 - `meals.json` - Backup meals data
-- `fetch_meals.py` - Script to update meals from API
+- `fetch_meals.js` - Script to update meals from API
 - `.env` - Your credentials (YOU create this from .env.example)
 - `README-MEALS.md` - Complete documentation
 
@@ -81,7 +81,7 @@ Each meal shows:
 - Look for: "Using embedded meals data from HTML"
 - If you see CORS error: The embedded data fix should prevent this!
 
-### "Python script fails"
+### "Script fails"
 - Check credentials in .env file
 - Verify internet connection
 - Check if easistent.com is accessible
@@ -110,4 +110,4 @@ When everything is working:
 ✅ Browser console: "Using embedded meals data from HTML"
 ✅ Slide 4 shows: "Dnevni jedilnik" with meal items
 ✅ No CORS errors in console
-✅ Meals update when you run fetch_meals.py
+✅ Meals update when you run fetch_meals.js
