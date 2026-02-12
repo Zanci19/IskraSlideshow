@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "date": "2026-02-10",
+      "menus": {
+        "breakfast": [],
+        "snack": [
+          {
+            "name": "Piščančja obara",
+            "description": "Kruh",
+            "is_primary": true
+          }
+        ],
+        "lunch": [],
+        "afternoon_snack": []
+      }
+    }
+  ]
+}
