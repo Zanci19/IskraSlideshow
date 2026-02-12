@@ -265,7 +265,7 @@ async function fetchMeals() {
             
         } catch (fallbackError) {
             console.error('Error loading meals.json:', fallbackError);
-            displayMealsError(`Napaka pri pridobivanju jedilnika: ${error.message}`);
+            displayMealsError(`Napaka pri pridobivanju jedilnika: ${fallbackError.message}`);
         }
     }
 }
