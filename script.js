@@ -257,14 +257,29 @@ async function fetchMeals() {
             throw new Error(`Login failed with status ${loginResponse.status}`);
         }
         
+        const loginResult = await loginResponse.json();
         console.log('Login successful');
         
-        // Step 2: Fetch meals data
+        // Extract access token and child ID from login response
+        const accessToken = loginResult?.access_token?.token;
+        const childId = loginResult?.user?.id;
+        
+        if (!accessToken || !childId) {
+            throw new Error('Login response missing access token or child ID');
+        }
+        
+        // Step 2: Fetch meals data with authentication
         const mealsUrl = 'https://moj.easistent.com/api/meals/menus?date=2026-02-12';
+        
+        const mealsHeaders = {
+            ...loginHeaders,
+            'authorization': `Bearer ${accessToken}`,
+            'X-Child-Id': String(childId)
+        };
         
         const mealsResponse = await fetch(mealsUrl, {
             method: 'GET',
-            headers: loginHeaders
+            headers: mealsHeaders
         });
         
         if (!mealsResponse.ok) {
