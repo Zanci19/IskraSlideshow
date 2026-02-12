@@ -247,6 +247,13 @@ const FALLBACK_MEALS_DATA = {
     ]
 };
 
+// Error messages
+const ERROR_MESSAGES = {
+    API_ERROR_PREFIX: 'Napaka pri pridobivanju jedilnika: ',
+    SERVER_UNAVAILABLE: 'Strežnik ni dosegljiv',
+    NO_DATA_AVAILABLE: 'Jedilnik trenutno ni dosegljiv. Preverite nastavitve strežnika.'
+};
+
 // Fetch meals data
 async function fetchMeals() {
     // First, check if there's embedded meals data in the HTML
@@ -262,27 +269,44 @@ async function fetchMeals() {
         }
     }
 
-    // If no embedded data or parsing failed, try fetching from endpoints
+    // Try fetching from API endpoint first
     const mealsEndpoints = window.location.protocol === 'file:'
         ? ['./meals.json', 'meals.json']
         : ['/api/meals', './api/meals', '/meals.json', './meals.json'];
 
     for (const endpoint of mealsEndpoints) {
         try {
+            console.log(`Attempting to fetch meals from: ${endpoint}`);
             const response = await fetch(endpoint);
-            if (!response.ok) continue;
+            
+            if (!response.ok) {
+                console.warn(`Endpoint ${endpoint} returned status ${response.status}`);
+                
+                // If it's the API endpoint and it failed, try to get error details
+                if (endpoint.includes('/api/meals')) {
+                    try {
+                        const errorData = await response.json();
+                        console.error('API Error:', errorData.error || errorData.message);
+                        displayMealsError(`${ERROR_MESSAGES.API_ERROR_PREFIX}${errorData.error || ERROR_MESSAGES.SERVER_UNAVAILABLE}`);
+                    } catch (e) {
+                        displayMealsError(`${ERROR_MESSAGES.API_ERROR_PREFIX}${ERROR_MESSAGES.SERVER_UNAVAILABLE}`);
+                    }
+                }
+                continue;
+            }
 
             const data = await response.json();
+            console.log(`Successfully loaded meals from ${endpoint}`);
             displayMeals(data);
             return;
         } catch (error) {
             // Keep trying alternative endpoints
-            console.warn(`Failed loading meals from ${endpoint}:`, error);
+            console.warn(`Failed loading meals from ${endpoint}:`, error.message);
         }
     }
 
     console.error('Error fetching meals: no available meals endpoint responded successfully.');
-    displayMeals(FALLBACK_MEALS_DATA);
+    displayMealsError(ERROR_MESSAGES.NO_DATA_AVAILABLE);
 }
 
 // Display meals data
@@ -371,10 +395,11 @@ function displayMeals(data) {
 }
 
 // Display meals error
-function displayMealsError() {
+function displayMealsError(customMessage) {
     const mealsContainer = document.getElementById('meals-container');
     if (mealsContainer) {
-        mealsContainer.innerHTML = '<div class="loading">Napaka pri nalaganju jedilnika</div>';
+        const errorMessage = customMessage || 'Napaka pri nalaganju jedilnika';
+        mealsContainer.innerHTML = `<div class="loading error-message">${errorMessage}</div>`;
     }
 }
 
