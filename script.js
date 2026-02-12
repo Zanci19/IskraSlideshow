@@ -247,6 +247,13 @@ const FALLBACK_MEALS_DATA = {
     ]
 };
 
+// Error messages
+const ERROR_MESSAGES = {
+    API_ERROR_PREFIX: 'Napaka pri pridobivanju jedilnika: ',
+    SERVER_UNAVAILABLE: 'Strežnik ni dosegljiv',
+    NO_DATA_AVAILABLE: 'Jedilnik trenutno ni dosegljiv. Preverite nastavitve strežnika.'
+};
+
 // Fetch meals data
 async function fetchMeals() {
     // First, check if there's embedded meals data in the HTML
@@ -280,9 +287,9 @@ async function fetchMeals() {
                     try {
                         const errorData = await response.json();
                         console.error('API Error:', errorData.error || errorData.message);
-                        displayMealsError(`Napaka pri pridobivanju jedilnika: ${errorData.error || 'Strežnik ni dosegljiv'}`);
+                        displayMealsError(`${ERROR_MESSAGES.API_ERROR_PREFIX}${errorData.error || ERROR_MESSAGES.SERVER_UNAVAILABLE}`);
                     } catch (e) {
-                        displayMealsError('Napaka pri pridobivanju jedilnika: Strežnik ni dosegljiv');
+                        displayMealsError(`${ERROR_MESSAGES.API_ERROR_PREFIX}${ERROR_MESSAGES.SERVER_UNAVAILABLE}`);
                     }
                 }
                 continue;
@@ -299,7 +306,7 @@ async function fetchMeals() {
     }
 
     console.error('Error fetching meals: no available meals endpoint responded successfully.');
-    displayMealsError('Napaka: Jedilnik trenutno ni dosegljiv. Prosimo, poskusite pozneje.');
+    displayMealsError(ERROR_MESSAGES.NO_DATA_AVAILABLE);
 }
 
 // Display meals data

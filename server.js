@@ -53,7 +53,7 @@ function loadCredentials() {
     return { username, password };
 }
 
-function formatDateYYYYMMDD(date = new Date()) {
+function formatDateToYyyyMmDd(date = new Date()) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -102,7 +102,7 @@ async function fetchMealsFromApi(username, password) {
         throw new Error('Login response missing access token or child ID');
     }
 
-    const currentDate = formatDateYYYYMMDD();
+    const currentDate = formatDateToYyyyMmDd(new Date());
     const mealsUrl = new URL('https://www.easistent.com/m/meals/menus');
     mealsUrl.searchParams.set('from', currentDate);
     mealsUrl.searchParams.set('to', currentDate);
