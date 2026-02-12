@@ -226,48 +226,104 @@ function displayWeatherError() {
     if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
+// Build candidate API endpoints for meals fetch
+function getMealsApiCandidates() {
+    const params = new URLSearchParams(window.location.search);
+    const configuredBase = params.get('apiBase') || window.localStorage.getItem('mealsApiBase');
+
+    const candidates = [];
+
+    if (configuredBase) {
+        candidates.push(`${configuredBase.replace(/\/$/, '')}/api/meals`);
+    }
+
+    // Relative path works when app is served from a subdirectory
+    candidates.push('api/meals');
+
+    // Root path works with the built-in server (server.js)
+    candidates.push('/api/meals');
+
+    // Common setup: frontend on one port, API on port 3000 at same host
+    if (window.location.port !== '3000') {
+        candidates.push(`${window.location.protocol}//${window.location.hostname}:3000/api/meals`);
+    }
+
+    return [...new Set(candidates)];
+}
+
+
+function getEmbeddedMealsData() {
+    const embeddedElement = document.getElementById('embedded-meals-data');
+    if (!embeddedElement) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(embeddedElement.textContent || '{}');
+    } catch (error) {
+        console.error('Failed to parse embedded meals data:', error);
+        return null;
+    }
+}
+
 // Fetch meals data from easistent.com API via server proxy
 async function fetchMeals() {
-    try {
-        console.log('Fetching meals from server...');
-        
-        // Try to use the server's /api/meals endpoint first
-        const response = await fetch('/api/meals');
-        
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-            throw new Error(errorData.error || errorData.message || `Server error: ${response.status}`);
+    const embeddedMealsData = getEmbeddedMealsData();
+
+    // file:// pages cannot call API endpoints; use embedded data directly
+    if (window.location.protocol === 'file:') {
+        if (embeddedMealsData) {
+            console.log('Using embedded meals data (file protocol).');
+            displayMeals(embeddedMealsData);
+            return;
         }
-        
-        const mealsData = await response.json();
-        console.log('Meals data fetched successfully:', mealsData);
-        
-        // Display the meals data
-        displayMeals(mealsData);
-        
-    } catch (error) {
-        console.error('Error fetching meals from server:', error);
-        
-        // Fallback: Try to load meals.json directly (for standalone mode)
+
+        displayMealsError('Napaka pri pridobivanju jedilnika: Za lokalni zagon manjkajo vgrajeni podatki.');
+        return;
+    }
+
+    const candidates = getMealsApiCandidates();
+    let lastError = null;
+
+    for (const endpoint of candidates) {
         try {
-            console.log('Trying to load meals from meals.json...');
-            const fallbackResponse = await fetch('meals.json');
-            
-            if (!fallbackResponse.ok) {
-                throw new Error(`Failed to load meals.json: ${fallbackResponse.status}`);
+            console.log(`Fetching meals from server: ${endpoint}`);
+            const response = await fetch(endpoint);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let parsedError = {};
+
+                if (errorText) {
+                    try {
+                        parsedError = JSON.parse(errorText);
+                    } catch {
+                        parsedError = { message: errorText };
+                    }
+                }
+
+                const serverMessage = parsedError.error || parsedError.message || response.statusText;
+                throw new Error(`Strežnik je vrnil ${response.status}${serverMessage ? `: ${serverMessage}` : ''}`);
             }
-            
-            const mealsData = await fallbackResponse.json();
-            console.log('Meals data loaded from meals.json successfully:', mealsData);
-            
-            // Display the meals data
+
+            const mealsData = await response.json();
+            console.log('Meals data fetched successfully:', mealsData);
             displayMeals(mealsData);
-            
-        } catch (fallbackError) {
-            console.error('Error loading meals.json:', fallbackError);
-            displayMealsError(`Napaka pri pridobivanju jedilnika: ${fallbackError.message}`);
+            return;
+        } catch (error) {
+            lastError = error;
+            console.warn(`Meals fetch failed for ${endpoint}:`, error);
         }
     }
+
+    if (embeddedMealsData) {
+        console.warn('All API endpoints failed, using embedded meals data.');
+        displayMeals(embeddedMealsData);
+        return;
+    }
+
+    console.error('Error fetching meals from all endpoints:', lastError);
+    displayMealsError(`Napaka pri pridobivanju jedilnika: ${lastError ? lastError.message : 'Neznana napaka'}`);
 }
 
 // Display meals data
