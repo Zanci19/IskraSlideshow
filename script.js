@@ -226,150 +226,89 @@ function displayWeatherError() {
     if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
-// Build candidate API endpoints for meals fetch
-function getMealsApiCandidates() {
-    const params = new URLSearchParams(window.location.search);
-    const configuredBase = params.get('apiBase') || window.localStorage.getItem('mealsApiBase');
+// Fetch meals data from local server endpoint
+async function fetchMeals() {
+    const endpoint = '/api/meals';
 
-    const candidates = [];
+    try {
+        const response = await fetch(endpoint);
 
-    if (configuredBase) {
-        candidates.push(`${configuredBase.replace(/\/$/, '')}/api/meals`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Strežnik je vrnil ${response.status}: ${errorText || response.statusText}`);
+        }
+
+        const mealsData = await response.json();
+        displayMeals(mealsData);
+    } catch (error) {
+        console.error('Error fetching meals:', error);
+        displayMealsError(`Napaka pri pridobivanju jedilnika: ${error.message}`);
     }
-
-    // Relative path works when app is served from a subdirectory
-    candidates.push('api/meals');
-
-    // Root path works with the built-in server (server.js)
-    candidates.push('/api/meals');
-
-    // Common setup: frontend on one port, API on port 3000 at same host
-    if (window.location.port !== '3000') {
-        candidates.push(`${window.location.protocol}//${window.location.hostname}:3000/api/meals`);
-    }
-
-    return [...new Set(candidates)];
 }
 
-// Fetch meals data from easistent.com API via server proxy
-async function fetchMeals() {
-    const candidates = getMealsApiCandidates();
-    let lastError = null;
+function normalizeMealsPayload(data) {
+    if (!data) return null;
 
-    for (const endpoint of candidates) {
-        try {
-            console.log(`Fetching meals from server: ${endpoint}`);
-            const response = await fetch(endpoint);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                let parsedError = {};
-
-                if (errorText) {
-                    try {
-                        parsedError = JSON.parse(errorText);
-                    } catch {
-                        parsedError = { message: errorText };
-                    }
-                }
-
-                const serverMessage = parsedError.error || parsedError.message || response.statusText;
-                throw new Error(`Strežnik je vrnil ${response.status}${serverMessage ? `: ${serverMessage}` : ''}`);
-            }
-
-            const mealsData = await response.json();
-            console.log('Meals data fetched successfully:', mealsData);
-            displayMeals(mealsData);
-            return;
-        } catch (error) {
-            lastError = error;
-            console.warn(`Meals fetch failed for ${endpoint}:`, error);
-        }
+    if (Array.isArray(data.items) && data.items.length > 0) {
+        return data.items[0]?.menus ? data.items[0].menus : null;
     }
 
-    console.error('Error fetching meals from all endpoints:', lastError);
-    displayMealsError(`Napaka pri pridobivanju jedilnika: ${lastError ? lastError.message : 'Neznana napaka'}`);
+    if (data.menus) {
+        return data.menus;
+    }
+
+    if (Array.isArray(data) && data.length > 0 && data[0]?.menus) {
+        return data[0].menus;
+    }
+
+    return null;
 }
 
 // Display meals data
 function displayMeals(data) {
     const mealsContainer = document.getElementById('meals-container');
     if (!mealsContainer) return;
-    
+
     try {
-        // Check if data has items array
-        if (!data.items || data.items.length === 0) {
+        const menus = normalizeMealsPayload(data);
+
+        if (!menus) {
             mealsContainer.innerHTML = '<div class="loading">Ni razpoložljivih podatkov o jedilniku</div>';
             return;
         }
-        
-        const todayMeals = data.items[0]; // Get first item (today's meals)
-        if (!todayMeals || !todayMeals.menus) {
+
+        const mealSections = [
+            { key: 'breakfast', title: 'Zajtrk' },
+            { key: 'snack', title: 'Malica' },
+            { key: 'lunch', title: 'Kosilo' },
+            { key: 'afternoon_snack', title: 'Popoldanska malica' }
+        ];
+
+        const sectionsHtml = mealSections.map(({ key, title }) => {
+            const meals = Array.isArray(menus[key]) ? menus[key] : [];
+            if (meals.length === 0) return '';
+
+            const itemsHtml = meals.map((meal) => {
+                const name = meal?.name || 'Brez naziva';
+                const description = meal?.description || '';
+
+                return `
+                    <div class="meal-item">
+                        <div class="meal-name">${name}</div>
+                        <div class="meal-description">${description}</div>
+                    </div>
+                `;
+            }).join('');
+
+            return `<div class="meal-section"><h3>${title}</h3>${itemsHtml}</div>`;
+        }).join('');
+
+        if (!sectionsHtml) {
             mealsContainer.innerHTML = '<div class="loading">Ni razpoložljivih podatkov o jedilniku</div>';
             return;
         }
-        
-        const menus = todayMeals.menus;
-        let mealsHTML = '<div class="meals-grid">';
-        
-        // Display breakfast
-        if (menus.breakfast && menus.breakfast.length > 0) {
-            mealsHTML += '<div class="meal-section"><h3>Zajtrk</h3>';
-            menus.breakfast.forEach(meal => {
-                mealsHTML += `
-                    <div class="meal-item">
-                        <div class="meal-name">${meal.name}</div>
-                        <div class="meal-description">${meal.description}</div>
-                    </div>
-                `;
-            });
-            mealsHTML += '</div>';
-        }
-        
-        // Display snack (malica)
-        if (menus.snack && menus.snack.length > 0) {
-            mealsHTML += '<div class="meal-section"><h3>Malica</h3>';
-            menus.snack.forEach(meal => {
-                mealsHTML += `
-                    <div class="meal-item">
-                        <div class="meal-name">${meal.name}</div>
-                        <div class="meal-description">${meal.description}</div>
-                    </div>
-                `;
-            });
-            mealsHTML += '</div>';
-        }
-        
-        // Display lunch
-        if (menus.lunch && menus.lunch.length > 0) {
-            mealsHTML += '<div class="meal-section"><h3>Kosilo</h3>';
-            menus.lunch.forEach(meal => {
-                mealsHTML += `
-                    <div class="meal-item">
-                        <div class="meal-name">${meal.name}</div>
-                        <div class="meal-description">${meal.description}</div>
-                    </div>
-                `;
-            });
-            mealsHTML += '</div>';
-        }
-        
-        // Display afternoon snack
-        if (menus.afternoon_snack && menus.afternoon_snack.length > 0) {
-            mealsHTML += '<div class="meal-section"><h3>Popoldanska malica</h3>';
-            menus.afternoon_snack.forEach(meal => {
-                mealsHTML += `
-                    <div class="meal-item">
-                        <div class="meal-name">${meal.name}</div>
-                        <div class="meal-description">${meal.description}</div>
-                    </div>
-                `;
-            });
-            mealsHTML += '</div>';
-        }
-        
-        mealsHTML += '</div>';
-        mealsContainer.innerHTML = mealsHTML;
+
+        mealsContainer.innerHTML = `<div class="meals-grid">${sectionsHtml}</div>`;
     } catch (error) {
         console.error('Error displaying meals:', error);
         displayMealsError();
@@ -379,10 +318,10 @@ function displayMeals(data) {
 // Display meals error
 function displayMealsError(customMessage) {
     const mealsContainer = document.getElementById('meals-container');
-    if (mealsContainer) {
-        const errorMessage = customMessage || 'Napaka pri nalaganju jedilnika';
-        mealsContainer.innerHTML = `<div class="loading error-message">${errorMessage}</div>`;
-    }
+    if (!mealsContainer) return;
+
+    const errorMessage = customMessage || 'Napaka pri nalaganju jedilnika';
+    mealsContainer.innerHTML = `<div class="loading error-message">${errorMessage}</div>`;
 }
 
 // Fetch news from RSS feed
