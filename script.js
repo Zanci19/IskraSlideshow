@@ -226,83 +226,76 @@ function displayWeatherError() {
     if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
-const FALLBACK_MEALS_DATA = {
-    items: [
-        {
-            date: '',
-            menus: {
-                breakfast: [],
-                snack: [
-                    {
-                        id: 'fallback-1',
-                        name: 'Jedilnik trenutno ni dosegljiv',
-                        description: 'Prikazujemo nadomestne podatke. Za osvežitev poskusite znova pozneje.',
-                        is_primary: true
-                    }
-                ],
-                lunch: [],
-                afternoon_snack: []
-            }
-        }
-    ]
-};
-
-// Error messages
-const ERROR_MESSAGES = {
-    API_ERROR_PREFIX: 'Napaka pri pridobivanju jedilnika: ',
-    SERVER_UNAVAILABLE: 'Strežnik ni dosegljiv',
-    NO_DATA_AVAILABLE: 'Jedilnik trenutno ni dosegljiv. Preverite nastavitve strežnika.',
-    FILE_PROTOCOL_UNSUPPORTED: 'Jedilnik iz lokalne datoteke ni dosegljiv prek file://. Zaženite projekt prek lokalnega strežnika.'
-};
-
-// Fetch meals data
+// Fetch meals data from easistent.com API
 async function fetchMeals() {
-    // First, check if there's embedded meals data in the HTML
-    const embeddedMealsElement = document.getElementById('embedded-meals-data');
-    if (embeddedMealsElement) {
-        try {
-            const embeddedData = JSON.parse(embeddedMealsElement.textContent);
-            console.log('Using embedded meals data from HTML');
-            displayMeals(embeddedData);
-            return;
-        } catch (error) {
-            console.warn('Failed to parse embedded meals data:', error);
+    try {
+        console.log('Logging in to easistent.com...');
+        
+        // Step 1: Login to easistent.com
+        const loginUrl = 'https://www.easistent.com/m/login';
+        const loginData = {
+            uporabnik: 'zanci.torkarci64@gmail.com',
+            geslo: 'szts11l!',
+            supported_user_types: ['parent', 'child']
+        };
+        
+        const loginHeaders = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+            'x-app-name': 'child',
+            'x-client-version': '11101',
+            'x-client-platform': 'android'
+        };
+        
+        const loginResponse = await fetch(loginUrl, {
+            method: 'POST',
+            headers: loginHeaders,
+            body: JSON.stringify(loginData)
+        });
+        
+        if (!loginResponse.ok) {
+            throw new Error(`Login failed with status ${loginResponse.status}`);
         }
-    }
-
-    // Browsers block fetch to local JSON when page is opened via file:// (CORS restriction).
-    if (window.location.protocol === 'file:') {
-        console.warn(ERROR_MESSAGES.FILE_PROTOCOL_UNSUPPORTED);
-        displayMeals(FALLBACK_MEALS_DATA);
-        return;
-    }
-
-    // Prefer static JSON first so the slideshow works when served via static hosts (e.g. `npx serve`).
-    const mealsEndpoints = ['./meals.json', '/meals.json', './api/meals', '/api/meals'];
-    const failedEndpoints = [];
-
-    for (const endpoint of mealsEndpoints) {
-        try {
-            console.log(`Attempting to fetch meals from: ${endpoint}`);
-            const response = await fetch(endpoint);
-            
-            if (!response.ok) {
-                failedEndpoints.push(`${endpoint} (${response.status})`);
-                continue;
-            }
-
-            const data = await response.json();
-            console.log(`Successfully loaded meals from ${endpoint}`);
-            displayMeals(data);
-            return;
-        } catch (error) {
-            // Keep trying alternative endpoints
-            failedEndpoints.push(`${endpoint} (${error.message})`);
+        
+        const loginResult = await loginResponse.json();
+        console.log('Login successful');
+        
+        // Extract access token and child ID from login response
+        const accessToken = loginResult?.access_token?.token;
+        const childId = loginResult?.user?.id;
+        
+        if (!accessToken || !childId) {
+            throw new Error('Login response missing access token or child ID');
         }
+        
+        // Step 2: Fetch meals data with authentication
+        const mealsUrl = 'https://moj.easistent.com/api/meals/menus?date=2026-02-12';
+        
+        const mealsHeaders = {
+            ...loginHeaders,
+            'authorization': `Bearer ${accessToken}`,
+            'X-Child-Id': String(childId)
+        };
+        
+        const mealsResponse = await fetch(mealsUrl, {
+            method: 'GET',
+            headers: mealsHeaders
+        });
+        
+        if (!mealsResponse.ok) {
+            throw new Error(`Failed to fetch meals with status ${mealsResponse.status}`);
+        }
+        
+        const mealsData = await mealsResponse.json();
+        console.log('Meals data fetched successfully:', mealsData);
+        
+        // Display the meals data
+        displayMeals(mealsData);
+        
+    } catch (error) {
+        console.error('Error fetching meals:', error);
+        displayMealsError(`Napaka pri pridobivanju jedilnika: ${error.message}`);
     }
-
-    console.warn('Error fetching meals: no available meals endpoint responded successfully.', failedEndpoints);
-    displayMeals(FALLBACK_MEALS_DATA);
 }
 
 // Display meals data
