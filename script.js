@@ -277,8 +277,9 @@ async function fetchMeals() {
         return;
     }
 
-    // Try fetching from API endpoint first
-    const mealsEndpoints = ['/api/meals', './api/meals', '/meals.json', './meals.json'];
+    // Prefer static JSON first so the slideshow works when served via static hosts (e.g. `npx serve`).
+    const mealsEndpoints = ['./meals.json', '/meals.json', './api/meals', '/api/meals'];
+    const failedEndpoints = [];
 
     for (const endpoint of mealsEndpoints) {
         try {
@@ -286,18 +287,7 @@ async function fetchMeals() {
             const response = await fetch(endpoint);
             
             if (!response.ok) {
-                console.warn(`Endpoint ${endpoint} returned status ${response.status}`);
-                
-                // If it's the API endpoint and it failed, try to get error details
-                if (endpoint.includes('/api/meals')) {
-                    try {
-                        const errorData = await response.json();
-                        console.error('API Error:', errorData.error || errorData.message);
-                        displayMealsError(`${ERROR_MESSAGES.API_ERROR_PREFIX}${errorData.error || ERROR_MESSAGES.SERVER_UNAVAILABLE}`);
-                    } catch (e) {
-                        displayMealsError(`${ERROR_MESSAGES.API_ERROR_PREFIX}${ERROR_MESSAGES.SERVER_UNAVAILABLE}`);
-                    }
-                }
+                failedEndpoints.push(`${endpoint} (${response.status})`);
                 continue;
             }
 
@@ -307,12 +297,12 @@ async function fetchMeals() {
             return;
         } catch (error) {
             // Keep trying alternative endpoints
-            console.warn(`Failed loading meals from ${endpoint}:`, error.message);
+            failedEndpoints.push(`${endpoint} (${error.message})`);
         }
     }
 
-    console.error('Error fetching meals: no available meals endpoint responded successfully.');
-    displayMealsError(ERROR_MESSAGES.NO_DATA_AVAILABLE);
+    console.warn('Error fetching meals: no available meals endpoint responded successfully.', failedEndpoints);
+    displayMeals(FALLBACK_MEALS_DATA);
 }
 
 // Display meals data
