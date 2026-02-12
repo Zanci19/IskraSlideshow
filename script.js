@@ -251,7 +251,8 @@ const FALLBACK_MEALS_DATA = {
 const ERROR_MESSAGES = {
     API_ERROR_PREFIX: 'Napaka pri pridobivanju jedilnika: ',
     SERVER_UNAVAILABLE: 'Strežnik ni dosegljiv',
-    NO_DATA_AVAILABLE: 'Jedilnik trenutno ni dosegljiv. Preverite nastavitve strežnika.'
+    NO_DATA_AVAILABLE: 'Jedilnik trenutno ni dosegljiv. Preverite nastavitve strežnika.',
+    FILE_PROTOCOL_UNSUPPORTED: 'Jedilnik iz lokalne datoteke ni dosegljiv prek file://. Zaženite projekt prek lokalnega strežnika.'
 };
 
 // Fetch meals data
@@ -269,10 +270,15 @@ async function fetchMeals() {
         }
     }
 
+    // Browsers block fetch to local JSON when page is opened via file:// (CORS restriction).
+    if (window.location.protocol === 'file:') {
+        console.warn(ERROR_MESSAGES.FILE_PROTOCOL_UNSUPPORTED);
+        displayMeals(FALLBACK_MEALS_DATA);
+        return;
+    }
+
     // Try fetching from API endpoint first
-    const mealsEndpoints = window.location.protocol === 'file:'
-        ? ['./meals.json', 'meals.json']
-        : ['/api/meals', './api/meals', '/meals.json', './meals.json'];
+    const mealsEndpoints = ['/api/meals', './api/meals', '/meals.json', './meals.json'];
 
     for (const endpoint of mealsEndpoints) {
         try {
