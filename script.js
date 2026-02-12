@@ -231,7 +231,7 @@ async function fetchMeals() {
     try {
         console.log('Fetching meals from server...');
         
-        // Use the server's /api/meals endpoint to avoid CORS issues
+        // Try to use the server's /api/meals endpoint first
         const response = await fetch('/api/meals');
         
         if (!response.ok) {
@@ -246,8 +246,27 @@ async function fetchMeals() {
         displayMeals(mealsData);
         
     } catch (error) {
-        console.error('Error fetching meals:', error);
-        displayMealsError(`Napaka pri pridobivanju jedilnika: ${error.message}`);
+        console.error('Error fetching meals from server:', error);
+        
+        // Fallback: Try to load meals.json directly (for standalone mode)
+        try {
+            console.log('Trying to load meals from meals.json...');
+            const fallbackResponse = await fetch('meals.json');
+            
+            if (!fallbackResponse.ok) {
+                throw new Error(`Failed to load meals.json: ${fallbackResponse.status}`);
+            }
+            
+            const mealsData = await fallbackResponse.json();
+            console.log('Meals data loaded from meals.json successfully:', mealsData);
+            
+            // Display the meals data
+            displayMeals(mealsData);
+            
+        } catch (fallbackError) {
+            console.error('Error loading meals.json:', fallbackError);
+            displayMealsError(`Napaka pri pridobivanju jedilnika: ${fallbackError.message}`);
+        }
     }
 }
 
