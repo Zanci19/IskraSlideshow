@@ -251,8 +251,37 @@ function getMealsApiCandidates() {
     return [...new Set(candidates)];
 }
 
+
+function getEmbeddedMealsData() {
+    const embeddedElement = document.getElementById('embedded-meals-data');
+    if (!embeddedElement) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(embeddedElement.textContent || '{}');
+    } catch (error) {
+        console.error('Failed to parse embedded meals data:', error);
+        return null;
+    }
+}
+
 // Fetch meals data from easistent.com API via server proxy
 async function fetchMeals() {
+    const embeddedMealsData = getEmbeddedMealsData();
+
+    // file:// pages cannot call API endpoints; use embedded data directly
+    if (window.location.protocol === 'file:') {
+        if (embeddedMealsData) {
+            console.log('Using embedded meals data (file protocol).');
+            displayMeals(embeddedMealsData);
+            return;
+        }
+
+        displayMealsError('Napaka pri pridobivanju jedilnika: Za lokalni zagon manjkajo vgrajeni podatki.');
+        return;
+    }
+
     const candidates = getMealsApiCandidates();
     let lastError = null;
 
@@ -285,6 +314,12 @@ async function fetchMeals() {
             lastError = error;
             console.warn(`Meals fetch failed for ${endpoint}:`, error);
         }
+    }
+
+    if (embeddedMealsData) {
+        console.warn('All API endpoints failed, using embedded meals data.');
+        displayMeals(embeddedMealsData);
+        return;
     }
 
     console.error('Error fetching meals from all endpoints:', lastError);
