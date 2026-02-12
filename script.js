@@ -226,67 +226,20 @@ function displayWeatherError() {
     if (miniWeatherNews) miniWeatherNews.innerHTML = errorHTML;
 }
 
-// Fetch meals data from easistent.com API
+// Fetch meals data from easistent.com API via server proxy
 async function fetchMeals() {
     try {
-        console.log('Logging in to easistent.com...');
+        console.log('Fetching meals from server...');
         
-        // Step 1: Login to easistent.com
-        const loginUrl = 'https://www.easistent.com/m/login';
-        const loginData = {
-            uporabnik: 'zanci.torkarci64@gmail.com',
-            geslo: 'szts11l!',
-            supported_user_types: ['parent', 'child']
-        };
+        // Use the server's /api/meals endpoint to avoid CORS issues
+        const response = await fetch('/api/meals');
         
-        const loginHeaders = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-            'x-app-name': 'child',
-            'x-client-version': '11101',
-            'x-client-platform': 'android'
-        };
-        
-        const loginResponse = await fetch(loginUrl, {
-            method: 'POST',
-            headers: loginHeaders,
-            body: JSON.stringify(loginData)
-        });
-        
-        if (!loginResponse.ok) {
-            throw new Error(`Login failed with status ${loginResponse.status}`);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            throw new Error(errorData.error || errorData.message || `Server error: ${response.status}`);
         }
         
-        const loginResult = await loginResponse.json();
-        console.log('Login successful');
-        
-        // Extract access token and child ID from login response
-        const accessToken = loginResult?.access_token?.token;
-        const childId = loginResult?.user?.id;
-        
-        if (!accessToken || !childId) {
-            throw new Error('Login response missing access token or child ID');
-        }
-        
-        // Step 2: Fetch meals data with authentication
-        const mealsUrl = 'https://moj.easistent.com/api/meals/menus?date=2026-02-12';
-        
-        const mealsHeaders = {
-            ...loginHeaders,
-            'authorization': `Bearer ${accessToken}`,
-            'X-Child-Id': String(childId)
-        };
-        
-        const mealsResponse = await fetch(mealsUrl, {
-            method: 'GET',
-            headers: mealsHeaders
-        });
-        
-        if (!mealsResponse.ok) {
-            throw new Error(`Failed to fetch meals with status ${mealsResponse.status}`);
-        }
-        
-        const mealsData = await mealsResponse.json();
+        const mealsData = await response.json();
         console.log('Meals data fetched successfully:', mealsData);
         
         // Display the meals data
