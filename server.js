@@ -22,8 +22,8 @@ const PORT = process.env.PORT || 3000;
 
 // Load credentials
 function loadCredentials() {
-    let username = process.env.EASISTENT_USERNAME;
-    let password = process.env.EASISTENT_PASSWORD;
+    let username = "zanci.torkarci64@gmail.com";
+    let password = "Szts11l!";
 
     if (!username || !password) {
         const envFile = path.join(__dirname, '.env');
@@ -72,8 +72,6 @@ async function fetchMealsFromApi(username, password) {
     };
 
     const loginPayload = {
-        username,
-        password,
         uporabnik: username,
         geslo: password,
         supported_user_types: ['parent', 'child']
